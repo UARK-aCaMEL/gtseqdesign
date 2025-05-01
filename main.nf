@@ -31,7 +31,7 @@ include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_gtse
 workflow ACAMEL_GTSEQDESIGN {
 
     take:
-    samplesheet // channel: samplesheet read in from --input
+    vcf // channel: vcf read in from --input
 
     main:
 
@@ -39,7 +39,7 @@ workflow ACAMEL_GTSEQDESIGN {
     // WORKFLOW: Run pipeline
     //
     GTSEQDESIGN (
-        samplesheet
+        vcf
     )
 
     emit:
@@ -73,7 +73,7 @@ workflow {
     // WORKFLOW: Run main workflow
     //
     ACAMEL_GTSEQDESIGN (
-        PIPELINE_INITIALISATION.out.samplesheet
+        PIPELINE_INITIALISATION.out.bcf
     )
 
     //
