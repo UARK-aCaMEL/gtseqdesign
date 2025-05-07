@@ -73,7 +73,7 @@ workflow {
     // WORKFLOW: Run main workflow
     //
     ACAMEL_GTSEQDESIGN (
-        PIPELINE_INITIALISATION.out.bcf
+        PIPELINE_INITIALISATION.out.vcf
     )
 
     //

@@ -20,8 +20,8 @@ include { imNotification            } from '../../nf-core/utils_nfcore_pipeline'
 include { UTILS_NFCORE_PIPELINE     } from '../../nf-core/utils_nfcore_pipeline'
 include { workflowCitation          } from '../../nf-core/utils_nfcore_pipeline'
 include { BCFTOOLS_VIEW             } from '../../../modules/nf-core/bcftools/view/main'
-include { TABIX_TABIX; TABIX_TABIX as TABIX_TABIX_POST   } from '../../../modules/nf-core/tabix/tabix/main'
-include { TABIX_BGZIP; TABIX_BGZIP as TABIX_BGZIP_VCF               } from '../../../modules/nf-core/tabix/bgzip/main'
+include { TABIX_TABIX               } from '../../../modules/nf-core/tabix/tabix/main'
+include { TABIX_BGZIP               } from '../../../modules/nf-core/tabix/bgzip/main'
 
 /*
 ========================================================================================
@@ -94,33 +94,34 @@ workflow PIPELINE_INITIALISATION {
         .set { ch_input }
 
     // Process VCF inputs
-    TABIX_BGZIP_VCF ( ch_input.vcf )
+    TABIX_BGZIP ( ch_input.vcf )
     ch_tabix_vcf_input = ch_input.vcfgz
-        | mix (TABIX_BGZIP_VCF.out.output )
+        | mix (TABIX_BGZIP.out.output )
     TABIX_TABIX( ch_tabix_vcf_input )
 
-    // For compressed or uncompressed VCF, convert to BCF then BGZIP
-    ch_bcftools_input = ch_input.vcf.join( TABIX_TABIX.out.csi )
-    BCFTOOLS_VIEW  ( ch_bcftools_input, [], [], [] )
-    TABIX_BGZIP ( BCFTOOLS_VIEW .out.vcf )
+    // // For compressed or uncompressed VCF, convert to BCF then BGZIP
+    // ch_bcftools_input = ch_tabix_vcf_input.join( TABIX_TABIX.out.tbi )
+    // ch_bcftools_input.view()
+    // BCFTOOLS_VIEW  ( ch_bcftools_input, [], [], [] )
+    // TABIX_BGZIP ( BCFTOOLS_VIEW .out.vcf )
 
-    // For BCF.GZ files, do nothing, just mix with the outputs
-    ch_bcf_gz = ch_input.bcfgz
-        | mix( BCFTOOLS_VIEW.out.vcf )
-        | mix ( ch_input.bcf )
-        | mix ( TABIX_BGZIP.out.output )
+    // // For BCF.GZ files, do nothing, just mix with the outputs
+    // ch_bcf_gz = ch_input.bcfgz
+    //     | mix( BCFTOOLS_VIEW.out.vcf )
+    //     | mix ( ch_input.bcf )
+    //     | mix ( TABIX_BGZIP.out.output )
 
     // Create tabix index (.tbi and .csi)
-    TABIX_TABIX_POST ( ch_bcf_gz )
+    // TABIX_TABIX_POST ( ch_tabix_vcf_input )
 
     // Collect versions
-    ch_versions = ch_versions.mix(BCFTOOLS_VIEW .out.versions)
+    // ch_versions = ch_versions.mix(BCFTOOLS_VIEW .out.versions)
     ch_versions = ch_versions.mix(TABIX_BGZIP.out.versions)
-    ch_versions = ch_versions.mix(TABIX_TABIX_POST.out.versions)
+    ch_versions = ch_versions.mix(TABIX_TABIX.out.versions)
 
     emit:
-    bcf      = ch_bcf_gz
-    csi      = TABIX_TABIX_POST.out.csi
+    vcf      = ch_tabix_vcf_input
+    tbi      = TABIX_TABIX.out.tbi
     versions = ch_versions
 }
 
