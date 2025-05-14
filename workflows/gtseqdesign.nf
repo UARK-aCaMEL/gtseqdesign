@@ -9,6 +9,7 @@ include { paramsSummaryMap       } from 'plugin/nf-validation'
 include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_gtseqdesign_pipeline'
+include { ADMIXPIPE               } from '../subworkflows/local/admixpipe.nf'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -19,12 +20,24 @@ include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_gtse
 workflow GTSEQDESIGN {
 
     take:
-    ch_vcf // [ meta, vcf ]
+    ch_vcf     // [meta, vcf]
+    ch_tbi     // [meta, tbi]
+    ch_popmap  // [meta, popmap]
 
     main:
 
     ch_versions = Channel.empty()
     ch_multiqc_files = Channel.empty()
+
+    //
+    // Run admixture pipeline
+    //
+    ADMIXPIPE(
+        ch_vcf,
+        ch_popmap
+    )
+
+    // ch_versions = ch_versions.mix(ADMIXPIPE.out.versions)
 
     //
     // Collate and save software versions

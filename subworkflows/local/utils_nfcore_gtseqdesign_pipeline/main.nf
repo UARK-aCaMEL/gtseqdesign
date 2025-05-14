@@ -39,6 +39,7 @@ workflow PIPELINE_INITIALISATION {
     nextflow_cli_args // array: List of positional nextflow CLI args
     outdir            // string: The output directory where the results will be saved
     input             // string: Path to input VCF or VCF.gz file
+    popmap            // string: path to popmap file
 
     main:
 
@@ -77,6 +78,11 @@ workflow PIPELINE_INITIALISATION {
     )
 
     //
+    // Custom validation for pipeline parameters
+    //
+    validateInputParameters()
+
+    //
     // Create channel from input file provided through params.input
     //
     Channel
@@ -88,8 +94,6 @@ workflow PIPELINE_INITIALISATION {
         .branch {
             vcf: it[1].name.endsWith('.vcf')
             vcfgz: it[1].name.endsWith('.vcf.gz')
-            bcf: it[1].name.endsWith('.bcf')  // BCF files
-            bcfgz: it[1].name.endsWith('.bcf.gz')  // Gzipped BCF files
         }
         .set { ch_input }
 
@@ -99,20 +103,16 @@ workflow PIPELINE_INITIALISATION {
         | mix (TABIX_BGZIP.out.output )
     TABIX_TABIX( ch_tabix_vcf_input )
 
-    // // For compressed or uncompressed VCF, convert to BCF then BGZIP
-    // ch_bcftools_input = ch_tabix_vcf_input.join( TABIX_TABIX.out.tbi )
-    // ch_bcftools_input.view()
-    // BCFTOOLS_VIEW  ( ch_bcftools_input, [], [], [] )
-    // TABIX_BGZIP ( BCFTOOLS_VIEW .out.vcf )
-
-    // // For BCF.GZ files, do nothing, just mix with the outputs
-    // ch_bcf_gz = ch_input.bcfgz
-    //     | mix( BCFTOOLS_VIEW.out.vcf )
-    //     | mix ( ch_input.bcf )
-    //     | mix ( TABIX_BGZIP.out.output )
-
-    // Create tabix index (.tbi and .csi)
-    // TABIX_TABIX_POST ( ch_tabix_vcf_input )
+    //
+    // Create channel for the popmap
+    //
+    Channel
+        .fromPath(popmap)
+        .map { file ->
+            def meta = [id: file.simpleName]
+            return [meta, file]
+        }
+        .set{ ch_popmap }
 
     // Collect versions
     // ch_versions = ch_versions.mix(BCFTOOLS_VIEW .out.versions)
@@ -122,6 +122,7 @@ workflow PIPELINE_INITIALISATION {
     emit:
     vcf      = ch_tabix_vcf_input
     tbi      = TABIX_TABIX.out.tbi
+    popmap   = ch_popmap
     versions = ch_versions
 }
 
@@ -174,18 +175,13 @@ workflow PIPELINE_COMPLETION {
 */
 
 //
-// Validate channels from input samplesheet
+// Check and validate pipeline parameters
 //
-def validateInputSamplesheet(input) {
-    def (metas, fastqs) = input[1..2]
-
-    // Check that multiple runs of the same sample are of the same datatype i.e. single-end / paired-end
-    def endedness_ok = metas.collect{ it.single_end }.unique().size == 1
-    if (!endedness_ok) {
-        error("Please check input samplesheet -> Multiple runs of a sample must be of the same datatype i.e. single-end or paired-end: ${metas[0].id}")
+def validateInputParameters() {
+    // Validate maxk is an integer
+    if (!(params.maxk instanceof Integer)) {
+        log.error "Invalid value for --maxk: '${params.maxk}'. It must be an integer."
     }
-
-    return [ metas[0], fastqs ]
 }
 
 //
