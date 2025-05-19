@@ -2,19 +2,29 @@ process ADMIXTUREPIPELINE {
     tag "$meta.id"
     label 'process_large'
 
-    container "${workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'docker://mussmann/admixpipe:3.2' :
-        'docker.io/mussmann/admixpipe:3.2'}"
+    container 'docker.io/mussmann/admixpipe:3.2'
 
     input:
     tuple val(meta), path(vcf)
-    tuple val(meta), path(popmap)
+    tuple val(meta2), path(popmap)
 
     output:
-    path "versions.yml", emit: versions
+    tuple val(meta), path("results.zip"),      emit: results
+    tuple val(meta), path("${meta.id}*.stdout"),         emit: logs
+    tuple val(meta), path("${meta.id}*.Q"),              emit: qfiles
+    tuple val(meta), path("${meta.id}*.P"),              emit: pfiles
+    tuple val(meta), path("${meta.id}.imiss"),           emit: imiss
+    tuple val(meta), path("${meta.id}_pops.txt"),        emit: pops
+    tuple val(meta), path("${meta.id}_inds.txt"),        emit: inds
+    tuple val(meta), path("${meta.id}.map"),             emit: map
+    tuple val(meta), path("${meta.id}.ped"),             emit: ped
+    tuple val(meta), path("${meta.id}.qfiles.json"),     emit: qfiles_json
+    path "versions.yml",     emit: versions
 
     script:
-    def prefix = meta.id
+    def args   = task.ext.args ?: ''
+    def maxk   = params.maxk ?: 3
+
     """
     # Dynamically add admixpipe paths if present in the container
     if [ -d /app ]; then
@@ -24,15 +34,17 @@ process ADMIXTUREPIPELINE {
     admixturePipeline.py \\
         -m ${popmap} \\
         -v ${vcf} \\
-        -n 8 \\
+        -n ${task.cpus} \\
         -k 1 \\
-        -K 3 \\
-        -R 10 \\
-        -c 10
+        -K ${maxk} \\
+        ${args}
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        AdmixPipe: \$(admixturePipeline.py --version 2>/dev/null || echo "3.2 (manual)")
+        AdmixPipe: 3.2
+        VCFtools: 0.1.16
+        PLINK: 20220402
+        Admixture: 1.30
     END_VERSIONS
     """
 }

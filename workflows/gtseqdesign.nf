@@ -9,7 +9,7 @@ include { paramsSummaryMap       } from 'plugin/nf-validation'
 include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_gtseqdesign_pipeline'
-include { ADMIXPIPE               } from '../subworkflows/local/admixpipe.nf'
+include { ADMIXPIPE as ADMIXPIPE_PRE } from '../subworkflows/local/admixpipe.nf'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -29,15 +29,28 @@ workflow GTSEQDESIGN {
     ch_versions = Channel.empty()
     ch_multiqc_files = Channel.empty()
 
+
+    //
+    // VCF pre-processing
+    //
+    // This step removes individuals with a large amount of missing data,
+    // and generates SNPio missingness reports
+
     //
     // Run admixture pipeline
     //
-    ADMIXPIPE(
+    ADMIXPIPE_PRE(
         ch_vcf,
         ch_popmap
     )
 
-    // ch_versions = ch_versions.mix(ADMIXPIPE.out.versions)
+    ch_versions = ch_versions.mix(ADMIXPIPE_PRE.out.versions)
+
+
+    //
+    // VCF filtering
+    //
+
 
     //
     // Collate and save software versions

@@ -1,36 +1,32 @@
-process CLUMPAK {
+process CVSUM {
     tag "$meta.id"
-    label 'process_medium'
+    label 'process_single'
 
     container 'docker.io/mussmann/admixpipe:3.2'
 
     input:
-    tuple val(meta), path(results)
-    tuple val(meta2), path(inds)
-    tuple val(meta3), path(pops)
+    tuple val(meta), path(cv)
+    tuple val(meta2), path(loglik)
 
     output:
-    tuple val(meta), path("clumpakOutput"),   emit: output
-    path "versions.yml",  emit: versions
+    tuple val(meta), path("cv_file.MajClust.png"), emit: cv_plot
+    tuple val(meta), path("loglikelihood_file.MajClust.png"), emit: loglik_plot
+    tuple val(meta), path("cv_output.txt"), emit: cv_output
+    tuple val(meta), path("ll_output.txt"), emit: ll_output
+    path "versions.yml", emit: versions
 
     script:
-    def args   = task.ext.args ?: ''
     """
     # Dynamically add admixpipe paths if present in the container
     if [ -d /app ]; then
         export PATH="/app/bin:/app/scripts/python/clumpak:/app/scripts/python/admixturePipeline:\$PATH"
     fi
 
-    submitClumpak.py \\
-        -r ${results} \\
-        -p ${meta.id} \\
-        -M \\
-        ${args}
+    cvSum.py
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         AdmixPipe: 3.2
-        CLUMPAK: 1.1
     END_VERSIONS
     """
 }
