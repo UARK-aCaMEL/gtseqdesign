@@ -31,7 +31,9 @@ include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_gtse
 workflow ACAMEL_GTSEQDESIGN {
 
     take:
-    vcf // channel: vcf read in from --input
+    vcf     // channel: vcf read in from --input
+    tbi     // channel: vcf index
+    popmap  // channel: population map
 
     main:
 
@@ -39,7 +41,9 @@ workflow ACAMEL_GTSEQDESIGN {
     // WORKFLOW: Run pipeline
     //
     GTSEQDESIGN (
-        vcf
+        vcf,
+        tbi,
+        popmap
     )
 
     emit:
@@ -66,14 +70,17 @@ workflow {
         params.monochrome_logs,
         args,
         params.outdir,
-        params.input
+        params.input,
+        params.popmap
     )
 
     //
     // WORKFLOW: Run main workflow
     //
     ACAMEL_GTSEQDESIGN (
-        PIPELINE_INITIALISATION.out.bcf
+        PIPELINE_INITIALISATION.out.vcf,
+        PIPELINE_INITIALISATION.out.tbi,
+        PIPELINE_INITIALISATION.out.popmap
     )
 
     //

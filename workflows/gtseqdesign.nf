@@ -4,12 +4,12 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { FASTQC                 } from '../modules/nf-core/fastqc/main'
 include { MULTIQC                } from '../modules/nf-core/multiqc/main'
 include { paramsSummaryMap       } from 'plugin/nf-validation'
 include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_gtseqdesign_pipeline'
+include { ADMIXPIPE as ADMIXPIPE_PRE } from '../subworkflows/local/admixpipe.nf'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -20,12 +20,37 @@ include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_gtse
 workflow GTSEQDESIGN {
 
     take:
-    ch_vcf // [ meta, vcf ]
+    ch_vcf     // [meta, vcf]
+    ch_tbi     // [meta, tbi]
+    ch_popmap  // [meta, popmap]
 
     main:
 
     ch_versions = Channel.empty()
     ch_multiqc_files = Channel.empty()
+
+
+    //
+    // VCF pre-processing
+    //
+    // This step removes individuals with a large amount of missing data,
+    // and generates SNPio missingness reports
+
+    //
+    // Run admixture pipeline
+    //
+    ADMIXPIPE_PRE(
+        ch_vcf,
+        ch_popmap
+    )
+
+    ch_versions = ch_versions.mix(ADMIXPIPE_PRE.out.versions)
+
+
+    //
+    // VCF filtering
+    //
+
 
     //
     // Collate and save software versions
