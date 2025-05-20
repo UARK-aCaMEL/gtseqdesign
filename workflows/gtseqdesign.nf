@@ -10,6 +10,7 @@ include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pi
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_gtseqdesign_pipeline'
 include { ADMIXPIPE as ADMIXPIPE_PRE } from '../subworkflows/local/admixpipe.nf'
+include { SNPIO_PRE_FILTER as SNPIO_FILTER } from '../modules/local/snpio/pre_filter.nf'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -29,27 +30,35 @@ workflow GTSEQDESIGN {
     ch_versions = Channel.empty()
     ch_multiqc_files = Channel.empty()
 
-
     //
     // VCF pre-processing
     //
     // This step removes individuals with a large amount of missing data,
+    // flanking variation within ${params.primer_length} distance, low variation,
     // and generates SNPio missingness reports
+    SNPIO_FILTER(
+        ch_vcf,
+        ch_tbi,
+        ch_popmap
+    )
+    ch_versions = ch_versions.mix(SNPIO_FILTER.out.versions)
 
     //
-    // Run admixture pipeline
+    // Run admixture pipeline on full (filtered) dataset
     //
     ADMIXPIPE_PRE(
         ch_vcf,
         ch_popmap
     )
-
     ch_versions = ch_versions.mix(ADMIXPIPE_PRE.out.versions)
 
 
     //
     // VCF filtering
     //
+    // Custom filtering script to remove SNPs which are poor GTseq
+    // candidates due to presence flanking variants, or not being centered
+    // within the sequenced locus
 
 
     //
