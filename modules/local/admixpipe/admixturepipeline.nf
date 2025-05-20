@@ -37,6 +37,8 @@ process ADMIXTUREPIPELINE {
         -n ${task.cpus} \\
         -k 1 \\
         -K ${maxk} \\
+        -C ${params.ind_cov} \\
+        -S 0.1 \\
         ${args}
 
     cat <<-END_VERSIONS > versions.yml

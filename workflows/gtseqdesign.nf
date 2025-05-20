@@ -10,6 +10,9 @@ include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pi
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_gtseqdesign_pipeline'
 include { ADMIXPIPE as ADMIXPIPE_PRE } from '../subworkflows/local/admixpipe.nf'
+include { SNPIO_PRE_FILTER as SNPIO_FILTER } from '../modules/local/snpio/pre_filter.nf'
+include { LIST_CHROMS } from '../modules/local/list_chroms.nf'
+include { FILTER_POSITIONS } from '../modules/local/filter_positions.nf'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -29,27 +32,52 @@ workflow GTSEQDESIGN {
     ch_versions = Channel.empty()
     ch_multiqc_files = Channel.empty()
 
-
     //
     // VCF pre-processing
     //
     // This step removes individuals with a large amount of missing data,
+    // flanking variation within ${params.primer_length} distance, low variation,
     // and generates SNPio missingness reports
-
-    //
-    // Run admixture pipeline
-    //
-    ADMIXPIPE_PRE(
+    SNPIO_FILTER(
         ch_vcf,
+        ch_tbi,
         ch_popmap
     )
+    ch_versions = ch_versions.mix(SNPIO_FILTER.out.versions)
 
+    //
+    // Run admixture pipeline on full (filtered) dataset
+    //
+    ADMIXPIPE_PRE(
+        SNPIO_FILTER.out.filtered_vcf,
+        ch_popmap
+    )
     ch_versions = ch_versions.mix(ADMIXPIPE_PRE.out.versions)
 
 
     //
-    // VCF filtering
+    // Denovo assembly handling
     //
+    // Removes SNPs if they are not in the first ${params.primer_length}
+    // number of bases (for denovo assembled loci only)
+    if ( params.denovo ) {
+        // Get list of denovo loci
+        LIST_CHROMS( SNPIO_FILTER.out.filtered_vcf, SNPIO_FILTER.out.filtered_tbi )
+        ch_versions = ch_versions.mix ( LIST_CHROMS.out.versions )
+
+        FILTER_POSITIONS(
+            SNPIO_FILTER.out.filtered_vcf,
+            SNPIO_FILTER.out.filtered_tbi,
+            LIST_CHROMS.out.chroms
+        )
+        ch_versions = ch_versions.mix ( FILTER_POSITIONS.out.versions )
+
+        ch_candidates = FILTER_POSITIONS.out.vcf
+        ch_candidates_tbi = FILTER_POSITIONS.out.tbi
+    } else {
+        ch_candidates = SNPIO_FILTER.out.filtered_vcf
+        ch_candidates_tbi = SNPIO_FILTER.out.filtered_tbi
+    }
 
 
     //
