@@ -11,6 +11,8 @@ include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pi
 include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_gtseqdesign_pipeline'
 include { ADMIXPIPE as ADMIXPIPE_PRE } from '../subworkflows/local/admixpipe.nf'
 include { SNPIO_PRE_FILTER as SNPIO_FILTER } from '../modules/local/snpio/pre_filter.nf'
+include { LIST_CHROMS } from '../modules/local/list_chroms.nf'
+include { FILTER_POSITIONS } from '../modules/local/filter_positions.nf'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -47,18 +49,35 @@ workflow GTSEQDESIGN {
     // Run admixture pipeline on full (filtered) dataset
     //
     ADMIXPIPE_PRE(
-        ch_vcf,
+        SNPIO_FILTER.out.filtered_vcf,
         ch_popmap
     )
     ch_versions = ch_versions.mix(ADMIXPIPE_PRE.out.versions)
 
 
     //
-    // VCF filtering
+    // Denovo assembly handling
     //
-    // Custom filtering script to remove SNPs which are poor GTseq
-    // candidates due to presence flanking variants, or not being centered
-    // within the sequenced locus
+    // Removes SNPs if they are not in the first ${params.primer_length}
+    // number of bases (for denovo assembled loci only)
+    if ( params.denovo ) {
+        // Get list of denovo loci
+        LIST_CHROMS( SNPIO_FILTER.out.filtered_vcf, SNPIO_FILTER.out.filtered_tbi )
+        ch_versions = ch_versions.mix ( LIST_CHROMS.out.versions )
+
+        FILTER_POSITIONS(
+            SNPIO_FILTER.out.filtered_vcf,
+            SNPIO_FILTER.out.filtered_tbi,
+            LIST_CHROMS.out.chroms
+        )
+        ch_versions = ch_versions.mix ( FILTER_POSITIONS.out.versions )
+
+        ch_candidates = FILTER_POSITIONS.out.vcf
+        ch_candidates_tbi = FILTER_POSITIONS.out.tbi
+    } else {
+        ch_candidates = SNPIO_FILTER.out.filtered_vcf
+        ch_candidates_tbi = SNPIO_FILTER.out.filtered_tbi
+    }
 
 
     //

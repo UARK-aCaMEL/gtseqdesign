@@ -10,6 +10,9 @@ process SNPIO_PRE_FILTER {
     tuple val(meta3), path(popmap)
 
     output:
+    tuple val(meta), path("${meta.id}.filter.nremover.vcf.gz"), emit: filtered_vcf
+    tuple val(meta), path("${meta.id}.filter.nremover.vcf.gz.tbi"), emit: filtered_tbi
+    tuple val(meta), path("${meta.id}_output"), emit: snpio_output
     path "versions.yml",     emit: versions
 
     script:
