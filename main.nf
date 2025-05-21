@@ -34,6 +34,7 @@ workflow ACAMEL_GTSEQDESIGN {
     vcf     // channel: vcf read in from --input
     tbi     // channel: vcf index
     popmap  // channel: population map
+    reference
 
     main:
 
@@ -43,7 +44,8 @@ workflow ACAMEL_GTSEQDESIGN {
     GTSEQDESIGN (
         vcf,
         tbi,
-        popmap
+        popmap,
+        reference
     )
 
     emit:
@@ -71,7 +73,8 @@ workflow {
         args,
         params.outdir,
         params.input,
-        params.popmap
+        params.popmap,
+        params.reference
     )
 
     //
@@ -80,7 +83,8 @@ workflow {
     ACAMEL_GTSEQDESIGN (
         PIPELINE_INITIALISATION.out.vcf,
         PIPELINE_INITIALISATION.out.tbi,
-        PIPELINE_INITIALISATION.out.popmap
+        PIPELINE_INITIALISATION.out.popmap,
+        PIPELINE_INITIALISATION.out.reference
     )
 
     //

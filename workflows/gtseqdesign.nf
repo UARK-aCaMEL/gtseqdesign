@@ -10,8 +10,10 @@ include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pi
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_gtseqdesign_pipeline'
 include { ADMIXPIPE as ADMIXPIPE_PRE } from '../subworkflows/local/admixpipe.nf'
+include { SELECT_CANDIDATES } from '../subworkflows/local/select_candidates.nf'
 include { SNPIO_PRE_FILTER as SNPIO_FILTER } from '../modules/local/snpio/pre_filter.nf'
 include { LIST_CHROMS } from '../modules/local/list_chroms.nf'
+include { GENERATE_CONSENSUS } from '../modules/local/generate_consensus.nf'
 include { FILTER_POSITIONS } from '../modules/local/filter_positions.nf'
 
 /*
@@ -26,11 +28,25 @@ workflow GTSEQDESIGN {
     ch_vcf     // [meta, vcf]
     ch_tbi     // [meta, tbi]
     ch_popmap  // [meta, popmap]
+    ch_reference
 
     main:
 
     ch_versions = Channel.empty()
     ch_multiqc_files = Channel.empty()
+
+    //
+    // Process reference catalog if needed
+    //
+    ch_reference
+        .branch {
+            loci: it[1].name.endsWith('.loci')
+            fasta: true
+        }
+        .set { ch_ref_to_process }
+    GENERATE_CONSENSUS ( ch_ref_to_process.loci )
+    ch_ref_ready = ch_ref_to_process.fasta
+        | mix ( GENERATE_CONSENSUS.out.fasta )
 
     //
     // VCF pre-processing
@@ -53,7 +69,6 @@ workflow GTSEQDESIGN {
         ch_popmap
     )
     ch_versions = ch_versions.mix(ADMIXPIPE_PRE.out.versions)
-
 
     //
     // Denovo assembly handling
@@ -78,6 +93,14 @@ workflow GTSEQDESIGN {
         ch_candidates = SNPIO_FILTER.out.filtered_vcf
         ch_candidates_tbi = SNPIO_FILTER.out.filtered_tbi
     }
+
+
+    //
+    // Compute locus-wise importance metrics
+    //
+    // SELECT_CANDIDATES(
+    //     SNPIO_FILTER.out.filtered_vcf
+    // )
 
 
     //
