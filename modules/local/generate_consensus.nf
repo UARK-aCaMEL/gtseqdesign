@@ -1,6 +1,6 @@
 process GENERATE_CONSENSUS {
     tag "$meta.id"
-    label 'process_small'
+    label 'process_medium'
 
     container 'docker.io/btmartin721/snpio:1.3.3'
 
@@ -15,6 +15,7 @@ process GENERATE_CONSENSUS {
     loci_to_consensus.py \\
     --input ${loci} \\
     --prefix "RAD" \\
+    --threads ${task.cpus} \\
     --output "consensus.fa"
     """
 }
