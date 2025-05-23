@@ -125,7 +125,7 @@ workflow PIPELINE_INITIALISATION {
             return [meta, file]
         }
         .branch {
-            gz: it[1].name.endsWith('.vcf.gz')
+            gz: it[1].name.endsWith('.gz')
             uncompressed: true
         }
         .set { ch_reference }

@@ -76,8 +76,8 @@ workflow ADMIXPIPE {
 
     emit:
     best_results = DISTRUCT.out.best_results
-    bestk        = BESTK.out.bestK_file
-    bestk_clumpp = BESTK.out.bestK_clumpp
+    bestK        = BESTK.out.bestK_file
+    bestK_clumpp = BESTK.out.bestK_clumpp
     inds         = ADMIXTUREPIPELINE.out.inds
     versions     = ch_versions
 }

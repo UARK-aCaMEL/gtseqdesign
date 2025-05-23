@@ -75,7 +75,9 @@ workflow GTSEQDESIGN {
     //
     // Removes SNPs if they are not in the first ${params.primer_length}
     // number of bases (for denovo assembled loci only)
-    if ( params.denovo ) {
+    // This forces primer+variant to be fully contained ONLY within the sequences locus
+    // Otherwise, flanking sequence will be inferred using the provided reference
+    if ( params.fully_contained ) {
         // Get list of denovo loci
         LIST_CHROMS( SNPIO_FILTER.out.filtered_vcf, SNPIO_FILTER.out.filtered_tbi )
         ch_versions = ch_versions.mix ( LIST_CHROMS.out.versions )
@@ -98,9 +100,13 @@ workflow GTSEQDESIGN {
     //
     // Compute locus-wise importance metrics
     //
-    // SELECT_CANDIDATES(
-    //     SNPIO_FILTER.out.filtered_vcf
-    // )
+    SELECT_CANDIDATES(
+        SNPIO_FILTER.out.filtered_vcf,
+        SNPIO_FILTER.out.filtered_tbi,
+        ADMIXPIPE_PRE.out.inds,
+        ADMIXPIPE_PRE.out.bestK_clumpp,
+        ADMIXPIPE_PRE.out.bestK
+    )
 
 
     //

@@ -1,24 +1,25 @@
 //
 // Rank loci using Rosenberg et al. 2003 importance indices
 //
-include { TABIX_BGZIP } from '../../modules/nf-core/tabix/bgzip/main'
+include { INFER_POPULATIONS } from '../../modules/local/infer_populations.nf'
 
 workflow SELECT_CANDIDATES {
-    // take:
-    // vcf         // [ val(meta), *.vcf or *.vcf.gz ]
-    // inds        // [ val(meta), *.inds ]
-    // clumppfile  // [ val(meta), best_clumpp_indfile.out ]
-    // bestk       // [ val(meta), bestK.txt ]
+    take:
+    vcf         // [ val(meta), *.vcf or *.vcf.gz ]
+    tbi         // [ val(meta), *.tbi ]
+    inds        // [ val(meta), *.inds ]
+    clumppfile  // [ val(meta), best_clumpp_indfile.out ]
+    bestk       // [ val(meta), bestK.txt ]
 
     main:
     ch_versions = Channel.empty()
 
-    // Subset VCF to samples used for ADMIXTURE
-
     // Assign samples to populations using ancestry coefficients
     // infer_populations
+    INFER_POPULATIONS( clumppfile, inds )
 
     // Convert subsetted VCF to Structure format
+    // and subset VCF to samples used for ADMIXTURE
 
     // Compute indices from Rosenberg et al. (2003)
 
