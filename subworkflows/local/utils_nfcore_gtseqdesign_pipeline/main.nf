@@ -202,8 +202,13 @@ def validateInputParameters() {
     if (!(params.maxk instanceof Integer)) {
         log.error "Invalid value for --maxk: '${params.maxk}'. It must be an integer."
     }
-}
 
+    // Validate ranking_metric
+    def valid_metrics = ['I_n', 'I_a', 'ORCA[1-allele]', 'ORCA[2-allele]']
+    if (!(params.ranking_metric in valid_metrics)) {
+        log.error "Invalid value for --ranking_metric: '${params.ranking_metric}'. Must be one of: ${valid_metrics.join(', ')}"
+    }
+}
 //
 // Generate methods description for MultiQC
 //

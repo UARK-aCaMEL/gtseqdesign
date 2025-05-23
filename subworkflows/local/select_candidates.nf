@@ -4,6 +4,8 @@
 include { INFER_POPULATIONS } from '../../modules/local/infer_populations.nf'
 include { SNPIO_CONVERT_STRUCTURE } from '../../modules/local/snpio/convert_structure.nf'
 include { INFOCALC } from '../../modules/local/infocalc.nf'
+include { RANK_LOCI } from '../../modules/local/rank_loci.nf'
+include { SUBSET_BY_INDEX } from '../../modules/local/subset_by_index.nf'
 
 
 workflow SELECT_CANDIDATES {
@@ -36,14 +38,23 @@ workflow SELECT_CANDIDATES {
         SNPIO_CONVERT_STRUCTURE.out.structure,
         bestk
     )
+    ch_versions = ch_versions.mix( INFOCALC.out.versions )
 
-    // // Fetch results for the best K value
-    // BESTK(
-    //     CVSUM.out.cv_output,
-    //     DISTRUCT.out.best_results
-    // )
-    // ch_versions = ch_versions.mix( BESTK.out.versions )
+    // Get indices for top loci
+    RANK_LOCI(
+        INFOCALC.out.metrics
+    )
+    ch_versions = ch_versions.mix( INFOCALC.out.versions )
+
+    // Subset selected loci and output new VCF
+    SUBSET_BY_INDEX(
+        vcf,
+        tbi,
+        RANK_LOCI.out.top_loci
+    )
 
     emit:
+    vcf          = SUBSET_BY_INDEX.out.vcf
+    tbi          = SUBSET_BY_INDEX.out.tbi
     versions     = ch_versions
 }
