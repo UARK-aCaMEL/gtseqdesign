@@ -3,6 +3,8 @@
 //
 include { INFER_POPULATIONS } from '../../modules/local/infer_populations.nf'
 include { SNPIO_CONVERT_STRUCTURE } from '../../modules/local/snpio/convert_structure.nf'
+include { INFOCALC } from '../../modules/local/infocalc.nf'
+
 
 workflow SELECT_CANDIDATES {
     take:
@@ -30,6 +32,10 @@ workflow SELECT_CANDIDATES {
     ch_versions = ch_versions.mix( SNPIO_CONVERT_STRUCTURE.out.versions )
 
     // Compute indices from Rosenberg et al. (2003)
+    INFOCALC(
+        SNPIO_CONVERT_STRUCTURE.out.structure,
+        bestk
+    )
 
     // // Fetch results for the best K value
     // BESTK(

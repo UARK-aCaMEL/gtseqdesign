@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 # Noah Rosenberg
 # rnoah@umich.edu
 # Infocalc - a program for calculating marker informativeness statistics
@@ -13,20 +13,20 @@
 #########################################################################
 #
 # INSTRUCTIONS
-# 
-# This program computes the statistics I_n, I_a, and ORCA, as described in 
-#           N A Rosenberg, L M Li, R Ward, J K Pritchard (2003) 
-#           Informativeness of genetic markers for inference of 
+#
+# This program computes the statistics I_n, I_a, and ORCA, as described in
+#           N A Rosenberg, L M Li, R Ward, J K Pritchard (2003)
+#           Informativeness of genetic markers for inference of
 #           ancestry.  Am J Hum Genet 73:1402-1422.
 #
-# The version of ORCA studied in Rosenberg et al. (2003) is based on 
-# assignment of a single allele.  This program also computes a version of ORCA 
+# The version of ORCA studied in Rosenberg et al. (2003) is based on
+# assignment of a single allele.  This program also computes a version of ORCA
 # based on assignment of a diploid genotype, as described in more detail in
 #           N A Rosenberg (2005)
 #           Algorithms for selecting informative marker panels for
 #           population assignment.  J Comput Biol 12:1183-1201.
 #
-# When using infocalc, please cite the appropriate paper for the 
+# When using infocalc, please cite the appropriate paper for the
 # statistic you are using.
 #
 # Each statistic is computed for each locus of a data file.  The data
@@ -43,9 +43,9 @@
 #    indicate phase, and it is arbitrary whether an allele is placed on
 #    the first or the second of the two lines.
 # 4. Missing data is marked by a particular value, in this case -9.
-# 
+#
 # An example data file, named mksp.stru, is below:
-# 
+#
 # D9S1779 D9S1825 D7S2477 D17S784 D16S403 D3S1262 D10S189
 # 854 86 Maya Mexico AMERICA 124 129 152 -9 138 112 186
 # 854 86 Maya Mexico AMERICA 142 135 156 -9 140 124 186
@@ -86,9 +86,9 @@
 # 1044 87 Pima Mexico AMERICA 124 129 142 232 150 112 182
 # 1044 87 Pima Mexico AMERICA 124 129 142 234 150 112 182
 #
-# 
+#
 # RUNNING THE PROGRAM
-# 
+#
 # The program is executed from a command line.  To run the program, type
 #
 #     ./infocalc
@@ -104,43 +104,43 @@
 #
 #     -output      Output file for the results (default "outfile")
 #
-#     -weightfile  A file of population weights (see below - default is 
+#     -weightfile  A file of population weights (see below - default is
 #                                                not to use a weightfile)
 #
-# The command-line options can be placed in any order. Also, the whole 
-# flag does not need to be written, and the first  letter will suffice.  
-# For example, the following two commands both will use column 3, input 
-# file mksp.stru output file  mksp.stru.infostats, and weightfile 
+# The command-line options can be placed in any order. Also, the whole
+# flag does not need to be written, and the first  letter will suffice.
+# For example, the following two commands both will use column 3, input
+# file mksp.stru output file  mksp.stru.infostats, and weightfile
 # mksp.weight.
 #
-# ./infocalc -column 3 -numpops 4 -input mksp.stru -output 
+# ./infocalc -column 3 -numpops 4 -input mksp.stru -output
 #            mksp.stru.info-weighted -weightfile mksp.weight
 #
-# ./infocalc -n 4 -c 3 -o mksp.stru.info-weighted -i mksp.stru -w mksp.weight 
+# ./infocalc -n 4 -c 3 -o mksp.stru.info-weighted -i mksp.stru -w mksp.weight
 #
-# The output is printed to mksp.stru.info-weighted.  From left to right, 
+# The output is printed to mksp.stru.info-weighted.  From left to right,
 # the columns of the output file are the I_n, I_a, ORCA (1-allele),
-# and ORCA (2-allele) statistics, as indicated in the header line.  
-# There is one line of output for each locus.  
+# and ORCA (2-allele) statistics, as indicated in the header line.
+# There is one line of output for each locus.
 #
-# In the output file, two lines follow the informativeness statistics 
-# for the loci.  The first of these lines recapitulates the command used 
-# to produce the output (with the command-line arguments placed in a 
-# standardized order).  The second line indicates the weights used 
+# In the output file, two lines follow the informativeness statistics
+# for the loci.  The first of these lines recapitulates the command used
+# to produce the output (with the command-line arguments placed in a
+# standardized order).  The second line indicates the weights used
 # for the populations, with each weight placed to the right of the
 # corresponding population name.
 #
-# As described in the Rosenberg et al. (2003) paper, difficulties 
-# sometimes arise in the calculation of I_a, so that denominators of 
-# zero are produced.  In these cases, -9999  (or a number very close 
-# to -9999, since some terms may be added to the -9999) is printed for 
+# As described in the Rosenberg et al. (2003) paper, difficulties
+# sometimes arise in the calculation of I_a, so that denominators of
+# zero are produced.  In these cases, -9999  (or a number very close
+# to -9999, since some terms may be added to the -9999) is printed for
 # the value of I_a.  Also, when a weightfile is used or when more than
-# 24 populations are specified, I_a is not calculated and "NA" is 
+# 24 populations are specified, I_a is not calculated and "NA" is
 # printed in the I_a column.
 #
-# 
+#
 # THE INFORMATIVENESS STATISTICS, AND
-# 1-ALLELE and 2-ALLELE VERSIONS OF ORCA 
+# 1-ALLELE and 2-ALLELE VERSIONS OF ORCA
 #
 # I_n (Rosenberg et al. 2003, eq. 4) gives the amount of information
 # gained about population assignment from observation of a single
@@ -150,15 +150,15 @@
 #
 # I_a (Rosenberg et al. 2003, eq. 14) gives the amount of information
 # gained about ancestry coefficients from observation of a single
-# randomly chosen allele at a locus.  This formula assumes a uniform 
+# randomly chosen allele at a locus.  This formula assumes a uniform
 # prior over a simplex for the distribution of ancestry coefficient
 # vectors in the population.
-# 
+#
 # Eq. 10 of Rosenberg et al. (2003) gives the 1-allele version of ORCA.
 # This is the optimal rate of correct assignment for a locus if a
 # randomly chosen allele in a pooled collection of populations is
 # assigned to its most likely source population.
-# 
+#
 # A 2-allele version of ORCA is also possible.  This is the optimal
 # rate of correct assignment for a locus if a randomly chosen diploid
 # genotype is assigned to its most likely source population.  The
@@ -166,9 +166,9 @@
 # Rosenberg et al. (2003), or from the M=1 case of eq. 1 of Rosenberg
 # (2005).
 #
-# 
+#
 # WEIGHTS
-# 
+#
 # The I_n and ORCA statistics are flexible in that they can accommodate
 # a non-uniform prior on the source population of an individual (the I_a
 # statistic does not have this flexibility).  This is accomplished by
@@ -185,7 +185,7 @@
 # Pima 0.3
 #
 # Running the command
-#  ./infocalc -n 4 -c 3 -o mksp.stru.info-weighted -i mksp.stru -w mksp.weight 
+#  ./infocalc -n 4 -c 3 -o mksp.stru.info-weighted -i mksp.stru -w mksp.weight
 # will measure the information content of markers subject to the prior
 # that individuals have 0.35 probability of being from the Maya
 # population, 0.15 from Karitiana, 0.2 from Surui, and 0.3 from Pima.
@@ -194,7 +194,7 @@
 #  ./infocalc -n 4 -c 3 -o mksp.stru.info -i mksp.stru
 # will assume that each population is equally likely to be the source
 # population.  The default is to assume that each source is equally likely.
-# 
+#
 # The weightfile must contain the same population names as the data
 # file, in any order.  The first column of the weightfile gives the
 # names of the populations, and the second column gives the weights.
@@ -204,25 +204,25 @@
 #
 #
 # TIPS ON USAGE
-# 
-# 1. This program should work on any system that can support perl.  The 
+#
+# 1. This program should work on any system that can support perl.  The
 #    directory in which perl is located may vary by system.  On my system
-#    it is /usr/bin/perl. The first line in this program should be altered 
+#    it is /usr/bin/perl. The first line in this program should be altered
 #    to the correct directory for perl.
-# 2. In UNIX, the program needs to be made executable by using 
+# 2. In UNIX, the program needs to be made executable by using
 #            chmod +x infocalc
-# 3. In this program the -column flag indicates which column is used to 
+# 3. In this program the -column flag indicates which column is used to
 #    identify individuals in the data file (either 1, 2, 3, 4, or 5).
-#    The default is to use column 3.  Columns 1, 2, 4, and 5 are then 
+#    The default is to use column 3.  Columns 1, 2, 4, and 5 are then
 #    ignored by the program.  However, it is necessary to have exactly 5
 #    columns before the genotypes begin.
 # 4. Negative numbers and 0 are treated as missing data, and are not
 #    tabulated in calculating allele frequencies.
 # 5. The program does not check for errors in formatting the data file
-#    and may produce nonsensical results on incorrectly formatted data.  
-#    However, since the format is the same as for STRUCTURE, you can run 
+#    and may produce nonsensical results on incorrectly formatted data.
+#    However, since the format is the same as for STRUCTURE, you can run
 #    STRUCTURE in advance to check for errors.
-# 6. The calculation of I_a assumes that there are at most 24 populations. 
+# 6. The calculation of I_a assumes that there are at most 24 populations.
 # 7. The order in which the loci are printed in the output is alphabetical.
 #
 #########################################################################
@@ -248,9 +248,9 @@ Getopt::Long::GetOptions( \%opts, qw(
   weightfile=s
 )) || die "Exiting... failed to parse command-line options\n";
 
-if ($opts{column}<=0 || $opts{column}>5) 
+if ($opts{column}<=0 || $opts{column}>5)
   {die "Exiting... column specifying population identifiers (-column) must be in [1,5]\n";}
-if ($opts{numpops}<=0) 
+if ($opts{numpops}<=0)
   {die "Exiting... number of populations (-numpops) must be a positive integer\n";}
 
 $column  = $opts{column}-1;
@@ -307,7 +307,7 @@ while ($line = <DATAFILE>) {
       ${${$absfreq{$locus}}{$allele}}{$pop}++;
       ${$sampsize{$locus}}{$pop}++;
     }
-  }  
+  }
 }
 
 ############################
@@ -322,7 +322,7 @@ foreach $pop (keys %totalcount) {
     die ("Exiting... weight for population $pop is outside the range [0,1)\n");
   }
     $num++;
-}  
+}
 if ($num != $numPops) {
   print ("Exiting... number of populations detected is not the same as in -numpops.\n");
   print ("  (1) Check that -numpops reflects the correct number of\n");
@@ -338,7 +338,7 @@ if ( ($sum-1)*($sum-1) > 0.000001) {
   print ("      of population names is the same in the weightfile as in \n");
   die   ("      the data file.\n");
 }
-if ($numPops>24) { 
+if ($numPops>24) {
   {print "Warning: number of populations (-numpops) must be at most 24.\n";}
   {print "---> The computation of I_a will be omitted.\n";}
 }
@@ -352,7 +352,7 @@ foreach $locus (keys %absfreq) {
   foreach $allele (keys %{$absfreq{$locus}}) {
     $aver = 0;
     foreach $pop (keys %{${$absfreq{$locus}}{$allele}}) {
-      $r = ${${$absfreq{$locus}}{$allele}}{$pop}; 
+      $r = ${${$absfreq{$locus}}{$allele}}{$pop};
       $s = ${$sampsize{$locus}}{$pop};
       ${${$relfreq{$locus}}{$allele}}{$pop} = $r / $s;
       $aver += $weight{$pop} * ${${$relfreq{$locus}}{$allele}}{$pop};
@@ -373,7 +373,7 @@ foreach $locus (keys %absfreq) {
     if ($pj > 0) {$left -= $pj * log($pj)};
   }
   foreach $allele (keys %{$absfreq{$locus}}) {
-    foreach $pop (keys %{${$absfreq{$locus}}{$allele}}) {   
+    foreach $pop (keys %{${$absfreq{$locus}}{$allele}}) {
       $pij = ${${$relfreq{$locus}}{$allele}}{$pop};
       if ($pij > 0) { $right += $weight{$pop} * $pij * log($pij); }
     }
@@ -389,7 +389,7 @@ foreach $locus (keys %absfreq) {
   $decisioninfo{$locus} = 0;
   foreach $allele (keys %{$absfreq{$locus}}) {
     $maxpijqi = 0;
-    foreach $pop (keys %{${$absfreq{$locus}}{$allele}}) {   
+    foreach $pop (keys %{${$absfreq{$locus}}{$allele}}) {
       $pijqi = ${${$relfreq{$locus}}{$allele}}{$pop} * $weight{$pop};
       if ($pijqi > $maxpijqi) { $maxpijqi = $pijqi; }
     }
@@ -406,7 +406,7 @@ foreach $locus (keys %absfreq) {
   foreach $allele (keys %{$absfreq{$locus}}) {
     foreach $otherallele (keys %{$absfreq{$locus}}) {
       $maxprod = 0;
-      foreach $pop (keys %{${$absfreq{$locus}}{$allele}}) {   
+      foreach $pop (keys %{${$absfreq{$locus}}{$allele}}) {
         $prod  = ${${$relfreq{$locus}}{$allele}}{$pop} * $weight{$pop};
         $prod *= ${${$relfreq{$locus}}{$otherallele}}{$pop};
         if ($prod > $maxprod) { $maxprod = $prod; }
@@ -482,15 +482,15 @@ if ($computeIa == 1) {
     $sum = 0;
     foreach $allele (keys %{$absfreq{$locus}}) {
       $pj = ${$averageRelfreq{$locus}}{$allele};
-      $sum += $pj * (1 - log($pj) - $stirl/$facto ); 
-      foreach $pop (keys %{${$absfreq{$locus}}{$allele}}) {   
+      $sum += $pj * (1 - log($pj) - $stirl/$facto );
+      foreach $pop (keys %{${$absfreq{$locus}}{$allele}}) {
         $pij = ${${$relfreq{$locus}}{$allele}}{$pop};
         $num = 0;
         $denom = $numPops;
-        if ($pij > 0) { 
+        if ($pij > 0) {
           $num = ($pij ** $numPops) * log($pij);
           $z = 0;
-          foreach $otherpop (keys %{${$absfreq{$locus}}{$allele}}) {   
+          foreach $otherpop (keys %{${$absfreq{$locus}}{$allele}}) {
             if ($otherpop ne $pop) {
               $plj = ${${$relfreq{$locus}}{$allele}}{$otherpop};
               $denom *= $pij - $plj;
@@ -504,7 +504,7 @@ if ($computeIa == 1) {
           if ($denom != 0 && $sum != $badconst) {
             $sum += $num/$denom;
           }
-          if ($denom == 0) { 
+          if ($denom == 0) {
             $sum = $badconst;
           }
         }
@@ -558,5 +558,5 @@ foreach $pop (sort keys %totalcount) {
 # [Version 1.1 incorporates new features from informativeStats-weights.perl.]
 #
 # [Version 1.0 was constructed from informativeStats2.perl for I_n and I_a,
-# and from decisionTheory.perl for ORCA, removing nonessential features.] 
+# and from decisionTheory.perl for ORCA, removing nonessential features.]
 
