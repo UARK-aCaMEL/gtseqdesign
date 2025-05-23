@@ -1,6 +1,7 @@
 MIT License
 
-Copyright (c) Tyler K. Chafin
+Copyright (c) Arkansas Conservation and Molecular Ecology Lab
+except infocalc.jl which is Copyright of Noah Rosenberg (2006)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

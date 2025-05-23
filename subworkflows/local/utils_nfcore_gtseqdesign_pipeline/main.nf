@@ -19,9 +19,9 @@ include { nfCoreLogo                } from '../../nf-core/utils_nfcore_pipeline'
 include { imNotification            } from '../../nf-core/utils_nfcore_pipeline'
 include { UTILS_NFCORE_PIPELINE     } from '../../nf-core/utils_nfcore_pipeline'
 include { workflowCitation          } from '../../nf-core/utils_nfcore_pipeline'
-include { BCFTOOLS_VIEW             } from '../../../modules/nf-core/bcftools/view/main'
 include { TABIX_TABIX               } from '../../../modules/nf-core/tabix/tabix/main'
 include { TABIX_BGZIP               } from '../../../modules/nf-core/tabix/bgzip/main'
+include { GUNZIP                    } from '../../../modules/nf-core/gunzip/main'
 
 /*
 ========================================================================================
@@ -40,6 +40,7 @@ workflow PIPELINE_INITIALISATION {
     outdir            // string: The output directory where the results will be saved
     input             // string: Path to input VCF or VCF.gz file
     popmap            // string: path to popmap file
+    reference
 
     main:
 
@@ -114,16 +115,35 @@ workflow PIPELINE_INITIALISATION {
         }
         .set{ ch_popmap }
 
+    //
+    // Prepare reference
+    //
+    Channel
+        .fromPath(reference)
+        .map { file ->
+            def meta = [id: file.simpleName]
+            return [meta, file]
+        }
+        .branch {
+            gz: it[1].name.endsWith('.gz')
+            uncompressed: true
+        }
+        .set { ch_reference }
+    GUNZIP ( ch_reference.gz )
+    ch_ref_out = ch_reference.uncompressed
+        | mix (GUNZIP.out.gunzip )
+
     // Collect versions
-    // ch_versions = ch_versions.mix(BCFTOOLS_VIEW .out.versions)
     ch_versions = ch_versions.mix(TABIX_BGZIP.out.versions)
     ch_versions = ch_versions.mix(TABIX_TABIX.out.versions)
+    ch_versions = ch_versions.mix(GUNZIP.out.versions)
 
     emit:
-    vcf      = ch_tabix_vcf_input
-    tbi      = TABIX_TABIX.out.tbi
-    popmap   = ch_popmap
-    versions = ch_versions
+    vcf       = ch_tabix_vcf_input
+    tbi       = TABIX_TABIX.out.tbi
+    popmap    = ch_popmap
+    reference = ch_ref_out
+    versions  = ch_versions
 }
 
 
@@ -182,8 +202,13 @@ def validateInputParameters() {
     if (!(params.maxk instanceof Integer)) {
         log.error "Invalid value for --maxk: '${params.maxk}'. It must be an integer."
     }
-}
 
+    // Validate ranking_metric
+    def valid_metrics = ['I_n', 'I_a', 'ORCA[1-allele]', 'ORCA[2-allele]']
+    if (!(params.ranking_metric in valid_metrics)) {
+        log.error "Invalid value for --ranking_metric: '${params.ranking_metric}'. Must be one of: ${valid_metrics.join(', ')}"
+    }
+}
 //
 // Generate methods description for MultiQC
 //

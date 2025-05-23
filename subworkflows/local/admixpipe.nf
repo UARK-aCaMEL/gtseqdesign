@@ -8,7 +8,7 @@ include { ADMIXTUREPIPELINE } from '../../modules/local/admixpipe/admixturepipel
 include { CLUMPAK } from '../../modules/local/admixpipe/submitclumpak.nf'
 include { CVSUM } from '../../modules/local/admixpipe/cvsum.nf'
 include { DISTRUCT } from '../../modules/local/admixpipe/distructrerun.nf'
-include { UNZIP } from '../../modules/nf-core/unzip/main'
+include { BESTK } from '../../modules/local/bestk.nf'
 
 workflow ADMIXPIPE {
     take:
@@ -42,8 +42,6 @@ workflow ADMIXPIPE {
     )
     ch_versions = ch_versions.mix( ADMIXTUREPIPELINE.out.versions )
 
-    ADMIXTUREPIPELINE.out.pfiles.view()
-
     // Run CLUMPAK
     CLUMPAK(
         ADMIXTUREPIPELINE.out.results,
@@ -69,10 +67,17 @@ workflow ADMIXPIPE {
     )
     ch_versions = ch_versions.mix( CVSUM.out.versions )
 
+    // Fetch results for the best K value
+    BESTK(
+        CVSUM.out.cv_output,
+        DISTRUCT.out.best_results
+    )
+    ch_versions = ch_versions.mix( BESTK.out.versions )
 
     emit:
-    // vcf      = ADMIXTUREPIPELINE.out.vcf      // [meta, vcf]
-    // tbi      = ADMIXTUREPIPELINE.out.tbi      // [meta, tbi]
-    // popmap   = ADMIXTUREPIPELINE.out.popmap   // [meta, popmap]
-    versions = ch_versions                    // [versions.yml]
+    best_results = DISTRUCT.out.best_results
+    bestK        = BESTK.out.bestK_file
+    bestK_clumpp = BESTK.out.bestK_clumpp
+    inds         = ADMIXTUREPIPELINE.out.inds
+    versions     = ch_versions
 }
