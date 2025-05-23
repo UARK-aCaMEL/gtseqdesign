@@ -2,6 +2,7 @@
 // Rank loci using Rosenberg et al. 2003 importance indices
 //
 include { INFER_POPULATIONS } from '../../modules/local/infer_populations.nf'
+include { SNPIO_CONVERT_STRUCTURE } from '../../modules/local/snpio/convert_structure.nf'
 
 workflow SELECT_CANDIDATES {
     take:
@@ -17,9 +18,16 @@ workflow SELECT_CANDIDATES {
     // Assign samples to populations using ancestry coefficients
     // infer_populations
     INFER_POPULATIONS( clumppfile, inds )
+    ch_versions = ch_versions.mix( INFER_POPULATIONS.out.versions )
 
     // Convert subsetted VCF to Structure format
     // and subset VCF to samples used for ADMIXTURE
+    SNPIO_CONVERT_STRUCTURE(
+        vcf,
+        tbi,
+        INFER_POPULATIONS.out.popmap
+    )
+    ch_versions = ch_versions.mix( SNPIO_CONVERT_STRUCTURE.out.versions )
 
     // Compute indices from Rosenberg et al. (2003)
 
