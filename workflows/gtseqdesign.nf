@@ -12,6 +12,7 @@ include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_gtse
 include { ADMIXPIPE as ADMIXPIPE_PRE } from '../subworkflows/local/admixpipe.nf'
 include { ADMIXPIPE as ADMIXPIPE_POST } from '../subworkflows/local/admixpipe.nf'
 include { SELECT_CANDIDATES } from '../subworkflows/local/select_candidates.nf'
+include { GENERATE_REPORT } from '../subworkflows/local/generate_report.nf'
 include { SNPIO_PRE_FILTER as SNPIO_FILTER } from '../modules/local/snpio/pre_filter.nf'
 include { LIST_CHROMS } from '../modules/local/list_chroms.nf'
 include { GENERATE_CONSENSUS } from '../modules/local/generate_consensus.nf'
@@ -118,6 +119,15 @@ workflow GTSEQDESIGN {
         ch_popmap
     )
     ch_versions = ch_versions.mix(ADMIXPIPE_POST.out.versions)
+
+    //
+    // Generate figures for the report
+    //
+    GENERATE_REPORT(
+        ADMIXPIPE_PRE.out.cv_file
+    )
+    ch_versions = ch_versions.mix( GENERATE_REPORT.out.versions )
+    ch_multiqc_files = ch_multiqc_files.mix( GENERATE_REPORT.out.mqc_files )
 
     //
     // Collate and save software versions

@@ -79,5 +79,6 @@ workflow ADMIXPIPE {
     bestK        = BESTK.out.bestK_file
     bestK_clumpp = BESTK.out.bestK_clumpp
     inds         = ADMIXTUREPIPELINE.out.inds
+    cv_file      = CVSUM.out.cv_output
     versions     = ch_versions
 }
