@@ -1,6 +1,6 @@
 process SNPIO_CONVERT_STRUCTURE {
     tag "$meta.id"
-    label 'process_medium'
+    label 'process_low'
 
     container 'docker.io/btmartin721/snpio:1.3.3'
 
