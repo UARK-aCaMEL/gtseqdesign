@@ -8,7 +8,7 @@ include { ADMIXTUREPIPELINE } from '../../modules/local/admixpipe/admixturepipel
 include { CLUMPAK } from '../../modules/local/admixpipe/submitclumpak.nf'
 include { CVSUM } from '../../modules/local/admixpipe/cvsum.nf'
 include { DISTRUCT } from '../../modules/local/admixpipe/distructrerun.nf'
-include { BESTK } from '../../modules/local/bestk.nf'
+include { BESTK } from '../../modules/local/bestK.nf'
 
 workflow ADMIXPIPE {
     take:
