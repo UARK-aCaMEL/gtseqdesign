@@ -62,12 +62,15 @@ workflow GTSEQDESIGN {
         ch_popmap
     )
     ch_versions = ch_versions.mix(SNPIO_FILTER.out.versions)
+    ch_filtered_vcf = SNPIO_FILTER.out.filtered_vcf.map { meta, file -> tuple(meta + [id: "${meta.id}_filtered"], file) }
+    ch_filtered_tbi = SNPIO_FILTER.out.filtered_tbi.map { meta, file -> tuple(meta + [id: "${meta.id}_filtered"], file) }
+    ch_snpio_output = SNPIO_FILTER.out.snpio_output.map { meta, dir -> tuple(meta + [id: "${meta.id}_filtered"], dir) }
 
     //
     // Run admixture pipeline on full (filtered) dataset
     //
     ADMIXPIPE_PRE(
-        SNPIO_FILTER.out.filtered_vcf,
+        ch_filtered_vcf,
         ch_popmap
     )
     ch_versions = ch_versions.mix(ADMIXPIPE_PRE.out.versions)
@@ -81,12 +84,12 @@ workflow GTSEQDESIGN {
     // Otherwise, flanking sequence will be inferred using the provided reference
     if ( params.fully_contained ) {
         // Get list of denovo loci
-        LIST_CHROMS( SNPIO_FILTER.out.filtered_vcf, SNPIO_FILTER.out.filtered_tbi )
+        LIST_CHROMS( ch_filtered_vcf, ch_filtered_tbi )
         ch_versions = ch_versions.mix ( LIST_CHROMS.out.versions )
 
         FILTER_POSITIONS(
-            SNPIO_FILTER.out.filtered_vcf,
-            SNPIO_FILTER.out.filtered_tbi,
+            ch_filtered_vcf,
+            ch_filtered_tbi,
             LIST_CHROMS.out.chroms
         )
         ch_versions = ch_versions.mix ( FILTER_POSITIONS.out.versions )
@@ -94,8 +97,8 @@ workflow GTSEQDESIGN {
         ch_candidates = FILTER_POSITIONS.out.vcf
         ch_candidates_tbi = FILTER_POSITIONS.out.tbi
     } else {
-        ch_candidates = SNPIO_FILTER.out.filtered_vcf
-        ch_candidates_tbi = SNPIO_FILTER.out.filtered_tbi
+        ch_candidates = ch_filtered_vcf
+        ch_candidates_tbi = ch_filtered_tbi
     }
 
 
@@ -103,19 +106,22 @@ workflow GTSEQDESIGN {
     // Compute locus-wise importance metrics
     //
     SELECT_CANDIDATES(
-        SNPIO_FILTER.out.filtered_vcf,
-        SNPIO_FILTER.out.filtered_tbi,
+        ch_candidates,
+        ch_candidates_tbi,
         ADMIXPIPE_PRE.out.inds,
         ADMIXPIPE_PRE.out.bestK_clumpp,
         ADMIXPIPE_PRE.out.bestK
     )
-
+    ch_versions = ch_versions.mix(SELECT_CANDIDATES.out.versions)
+    ch_selected_vcf = SELECT_CANDIDATES.out.vcf.map { meta, file -> tuple(meta + [id: meta.id.replaceFirst(/_filtered$/, '_selected')], file) }
+    ch_selected_tbi = SELECT_CANDIDATES.out.tbi.map { meta, file -> tuple(meta + [id: meta.id.replaceFirst(/_filtered$/, '_selected')], file) }
+    ch_selected_snpio_output = SELECT_CANDIDATES.out.snpio_output.map { meta, dir -> tuple(meta + [id: meta.id.replaceFirst(/_filtered$/, '_selected')], dir) }
 
     //
     // Run admixture pipeline on selected candidates
     //
     ADMIXPIPE_POST(
-        SELECT_CANDIDATES.out.vcf,
+        ch_selected_vcf,
         ch_popmap
     )
     ch_versions = ch_versions.mix(ADMIXPIPE_POST.out.versions)
@@ -124,7 +130,17 @@ workflow GTSEQDESIGN {
     // Generate figures for the report
     //
     GENERATE_REPORT(
-        ADMIXPIPE_PRE.out.cv_file
+        ch_vcf,
+        ch_tbi,
+        ch_filtered_vcf,
+        ch_filtered_tbi,
+        ADMIXPIPE_PRE.out.cv_file,
+        ch_snpio_output,
+        ch_selected_snpio_output,
+        ADMIXPIPE_PRE.out.bestK_clumpp,
+        ADMIXPIPE_POST.out.bestK_clumpp,
+        ADMIXPIPE_POST.out.inds,
+        ADMIXPIPE_POST.out.pops
     )
     ch_versions = ch_versions.mix( GENERATE_REPORT.out.versions )
     ch_multiqc_files = ch_multiqc_files.mix( GENERATE_REPORT.out.mqc_files )

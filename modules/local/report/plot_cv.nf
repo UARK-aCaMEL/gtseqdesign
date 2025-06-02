@@ -2,7 +2,7 @@ process PLOT_CV {
     tag "$meta.id"
     label 'process_single'
 
-    container "docker.io/tkchafin/plotly:1.0"
+    container "docker.io/tkchafin/plotly:1.1"
 
     input:
         tuple val(meta), path(cv_file)
@@ -12,8 +12,12 @@ process PLOT_CV {
         path("versions.yml")   , emit: versions
 
     script:
+    def args   = task.ext.args ?: ''
     """
-    plot_cv.py ${cv_file}
+    plot_cv.py \\
+        ${cv_file} \\
+        --template ${baseDir}/assets/multiqc_cv.html \\
+        ${args}
 
     plotly_version=\$(python3 -c 'import plotly; print(plotly.__version__)')
 

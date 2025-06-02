@@ -1,12 +1,38 @@
 custom_data:
-  cv:
-    parent_id: "genetic_structure"
-    parent_name: "Genetic structure"
-    parent_description: "analysis carried out to explore genetic structure of populations"
-    id: "cv"
-    section_name: 'cross-validation (CV) plot for ADMIXTURE analysis'
-    description: 'Note that the color-pattern is not consistent across the different values of K'
-    plot_type: 'html'
+  sample_summary.tsv:
+    id: "sample_summary"
+    section_name: "Sample Filtering Summary"
+    description: "Missing data and heterozygosity before and after filtering"
+    plot_type: "generalstats"
+    file_format: "tsv"
+    headers:
+      - Missing_Pre:
+          title: "Missing (Pre)"
+          min: 0
+          max: 1.0
+          scale: "Greens"
+      - Missing_Post:
+          title: "Missing (Post)"
+          min: 0
+          max: 1.0
+          scale: "Greens"
+      - Heterozygosity_Pre:
+          title: "Heterozygosity (Pre)"
+          min: 0
+          max: 1.0
+          scale: "Blues"
+      - Heterozygosity_Post:
+          title: "Heterozygosity (Post)"
+          min: 0
+          max: 1.0
+          scale: "Blues"
+    file_search_pattern:
+      - "*sample_summary*"
+
+  cvplot_mqc.html:
+    id: "cvp"
+    plot_type: "html"
+
 custom_content:
-    order:
-      - cv
+  order:
+    - cvp

@@ -15,7 +15,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Python packages
-RUN pip install --no-cache-dir pandas plotly
+RUN pip install --no-cache-dir pandas plotly scipy
 
 # Set working directory
 WORKDIR /app

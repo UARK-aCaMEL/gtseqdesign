@@ -38,6 +38,10 @@ def main():
         prefix=prefix
     )
 
+    # generate missingness reports
+    gd.missingness_reports()
+
+    # convert to structure format
     output_raw = f"{prefix}.stru"
     gd.write_structure(output_raw)
 
@@ -77,6 +81,7 @@ def main():
 
             fout.write("\t".join(parts1) + "\n")
             fout.write("\t".join(parts2) + "\n")
+
 
 if __name__ == "__main__":
     main()

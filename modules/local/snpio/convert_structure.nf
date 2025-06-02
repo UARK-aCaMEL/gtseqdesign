@@ -11,6 +11,7 @@ process SNPIO_CONVERT_STRUCTURE {
 
     output:
     tuple val(meta), path("*.labeled.stru"), emit: structure
+    tuple val(meta), path("*_output"), emit: snpio_output
     path "versions.yml",     emit: versions
 
     script:
