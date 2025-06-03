@@ -11,7 +11,7 @@ process SAMPLE_SUMMARY {
         tuple val(meta4), path(snpio_post)
 
     output:
-        path("sample_summary_mqc.tsv"), emit: summary_txt
+        path("sample_summary_mqc.json"), emit: summary_txt
         path("versions.yml"), emit: versions
 
     script:
@@ -32,7 +32,8 @@ process SAMPLE_SUMMARY {
         --miss-post \$miss2 \\
         --het-pre \$het1 \\
         --het-post \$het2 \\
-        --output sample_summary_mqc.tsv
+        --header ${baseDir}/assets/multiqc_sample_stats.html \\
+        --output sample_summary_mqc.json
 
     pandas_version=\$(python3 -c 'import pandas; print(pandas.__version__)')
     cat <<-END_VERSIONS > versions.yml

@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 import pandas as pd
 import argparse
+import json
+import re
 
 
 def load_list(file):
@@ -29,6 +31,56 @@ def compute_heterozygosity(file):
     return df[["SampleID", "Heterozygosity"]].set_index("SampleID")
 
 
+def parse_html_header(path):
+    """
+    Parses HTML-style comment metadata into a dictionary.
+    """
+    meta = {}
+    with open(path) as f:
+        for line in f:
+            match = re.match(r'^\s*([a-zA-Z0-9_]+):\s*"?(.*?)"?\s*$', line.strip("<!--> "))
+            if match:
+                key, value = match.groups()
+                meta[key] = value
+    return meta
+
+
+def write_mqc_json(df, metadata, output_path):
+    """
+    Write a MultiQC-style table JSON with one row per sample.
+    """
+    data_block = {
+        str(row["Sample"]): {
+            k: v for k, v in row.items() if k != "Sample"
+        }
+        for _, row in df.iterrows()
+    }
+
+    json_obj = {
+        "id": metadata.get("id", "sample_summary"),
+        "parent_id": metadata.get("parent_id", "summary"),
+        "parent_name": metadata.get("parent_name", "Summary"),
+        "section_name": metadata.get("section_name", "Sample Summary Table"),
+        "description": metadata.get("description", "Summary per sample."),
+        "plot_type": metadata.get("plot_type", "table"),
+        "pconfig": {
+            "id": metadata.get("id", "sample_summary_plot"),
+            "title": metadata.get("section_name", "Sample Summary Table"),
+            "ylab": "Value",
+            "xlab": "Metric",
+            "xDecimals": False,
+            "tt_label": "Metric",
+            "min": 0,
+            "max": 1,
+            "scale": "YlGnBu"
+        },
+        "data": data_block,
+    }
+
+    with open(output_path, "w") as f:
+        json.dump(json_obj, f, indent=2)
+
+
 def main(args):
     inds_pre = load_list(args.inds_pre)
     inds_post = load_list(args.inds_post)
@@ -52,7 +104,12 @@ def main(args):
     df["Heterozygosity_Post"] = het_post["Heterozygosity"].reindex(df.index)
 
     df.reset_index(inplace=True)
-    df.to_csv(args.output, sep="\t", index=False)
+
+    if args.header:
+        metadata = parse_html_header(args.header)
+        write_mqc_json(df, metadata, args.output)
+    else:
+        df.to_csv(args.output, sep="\t", index=False)
 
 
 if __name__ == "__main__":
@@ -63,5 +120,6 @@ if __name__ == "__main__":
     parser.add_argument("--miss-post", required=True)
     parser.add_argument("--het-pre", required=True)
     parser.add_argument("--het-post", required=True)
-    parser.add_argument("--output", required=True)
+    parser.add_argument("--output", required=True, help="Output JSON or TSV file")
+    parser.add_argument("--header", required=False, help="Optional HTML header file to generate MultiQC JSON")
     main(parser.parse_args())
