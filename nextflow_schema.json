@@ -10,7 +10,7 @@
             "type": "object",
             "fa_icon": "fas fa-terminal",
             "description": "Define where the pipeline should find input data and save output data.",
-            "required": ["input", "outdir"],
+            "required": ["input", "outdir", "reference", "popmap"],
             "properties": {
                 "input": {
                     "type": "string",
@@ -26,20 +26,71 @@
                     "type": "string",
                     "format": "directory-path",
                     "description": "The output directory where the results will be saved. You have to use absolute paths to storage on Cloud infrastructure.",
-                    "fa_icon": "fas fa-folder-open",
-                    "default": "results"
+                    "fa_icon": "fas fa-folder-open"
+                },
+                "reference": {
+                    "type": "string",
+                    "description": "Reference file used for assembly (as .fasta or .loci for denovo RADseq)"
+                },
+                "popmap": {
+                    "type": "string",
+                    "description": "Tab-delimited population map file"
                 },
                 "email": {
                     "type": "string",
                     "description": "Email address for completion summary.",
                     "fa_icon": "fas fa-envelope",
                     "help_text": "Set this parameter to your e-mail address to get a summary e-mail with details of the run sent to you when the workflow exits. If set in your user config file (`~/.nextflow/config`) then you don't need to specify this on the command line for every run.",
-                    "pattern": "^([a-zA-Z0-9_\\-\\.]+)@([a-zA-Z0-9_\\-\\.]+)\\.([a-zA-Z]{2,5})$"
+                    "pattern": "^([a-zA-Z0-9_\\-\\.]+)@([a-zA-Z0-9_\\-\\.]+)\\.([a-zA-Z]{2,5})$",
+                    "hidden": true
                 },
                 "multiqc_title": {
                     "type": "string",
                     "description": "MultiQC report title. Printed as page header, used for filename if not otherwise specified.",
-                    "fa_icon": "fas fa-file-signature"
+                    "fa_icon": "fas fa-file-signature",
+                    "hidden": true
+                }
+            }
+        },
+        "runtime_parameters": {
+            "title": "Runtime parameters",
+            "type": "object",
+            "description": "",
+            "default": "",
+            "properties": {
+                "maxk": {
+                    "type": "integer",
+                    "default": 10,
+                    "description": "Maximum K value to run for ADMIXTURE"
+                },
+                "primer_length": {
+                    "type": "integer",
+                    "default": 75,
+                    "description": "GTseq primer length; used to assess SNPs for flanking variants"
+                },
+                "ind_cov": {
+                    "type": "number",
+                    "default": 0.9,
+                    "description": "Missing data threshold to retain an individual (where 0=no missing data and 1=all missing data)"
+                },
+                "fully_contained": {
+                    "type": "boolean",
+                    "description": "Boolean; Trigger if targeted SNP+primers should be fully contained within a locus (use for denovo reduced representation preparations)"
+                },
+                "min_maf": {
+                    "type": "number",
+                    "default": 0.05,
+                    "description": "Minimum minor allele frequency to retain an unlinked SNP for candidate selection"
+                },
+                "max_candidates": {
+                    "type": "integer",
+                    "default": 500,
+                    "description": "Number of SNP candidates to output"
+                },
+                "ranking_metric": {
+                    "type": "string",
+                    "default": "I_a",
+                    "description": "Ranking metric from Rosenberg et al (2003) to select loci. Must be one of: \"I_a\", \"I_n\", \"ORCA[1-allele]\", \"ORCA[2-allele]\""
                 }
             }
         },
@@ -248,6 +299,9 @@
     "allOf": [
         {
             "$ref": "#/definitions/input_output_options"
+        },
+        {
+            "$ref": "#/definitions/runtime_parameters"
         },
         {
             "$ref": "#/definitions/institutional_config_options"

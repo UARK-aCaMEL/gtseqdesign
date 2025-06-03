@@ -56,5 +56,6 @@ workflow SELECT_CANDIDATES {
     emit:
     vcf          = SUBSET_BY_INDEX.out.vcf
     tbi          = SUBSET_BY_INDEX.out.tbi
+    snpio_output = SNPIO_CONVERT_STRUCTURE.out.snpio_output
     versions     = ch_versions
 }

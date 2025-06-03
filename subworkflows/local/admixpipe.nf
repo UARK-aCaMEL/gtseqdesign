@@ -8,7 +8,7 @@ include { ADMIXTUREPIPELINE } from '../../modules/local/admixpipe/admixturepipel
 include { CLUMPAK } from '../../modules/local/admixpipe/submitclumpak.nf'
 include { CVSUM } from '../../modules/local/admixpipe/cvsum.nf'
 include { DISTRUCT } from '../../modules/local/admixpipe/distructrerun.nf'
-include { BESTK } from '../../modules/local/bestk.nf'
+include { BESTK } from '../../modules/local/bestK.nf'
 
 workflow ADMIXPIPE {
     take:
@@ -79,5 +79,7 @@ workflow ADMIXPIPE {
     bestK        = BESTK.out.bestK_file
     bestK_clumpp = BESTK.out.bestK_clumpp
     inds         = ADMIXTUREPIPELINE.out.inds
+    pops         = ADMIXTUREPIPELINE.out.pops
+    cv_file      = CVSUM.out.cv_output
     versions     = ch_versions
 }

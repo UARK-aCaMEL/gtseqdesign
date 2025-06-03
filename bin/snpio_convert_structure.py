@@ -3,12 +3,14 @@ import argparse
 import os
 from snpio import VCFReader
 
+
 def get_prefix_from_vcf_path(vcf_path):
     basename = os.path.basename(vcf_path)
     for ext in [".vcf.gz", ".vcf"]:
         if basename.endswith(ext):
-            return basename[:-len(ext)]
+            return basename[: -len(ext)]
     return basename  # fallback
+
 
 def parse_popmap(popmap_path):
     popmap = {}
@@ -18,8 +20,11 @@ def parse_popmap(popmap_path):
             popmap[sample] = int(group.lstrip("K"))
     return popmap
 
+
 def main():
-    parser = argparse.ArgumentParser(description="Create STRUCTURE input from VCF with labeled populations")
+    parser = argparse.ArgumentParser(
+        description="Create STRUCTURE input from VCF with labeled populations"
+    )
     parser.add_argument("--vcf", required=True, help="Path to VCF file")
     parser.add_argument("--popmap", required=True, help="Path to popmap (sample\\tKx)")
     args = parser.parse_args()
@@ -35,9 +40,13 @@ def main():
         plot_format="png",
         plot_fontsize=8,
         plot_dpi=300,
-        prefix=prefix
+        prefix=prefix,
     )
 
+    # generate missingness reports
+    gd.missingness_reports()
+
+    # convert to structure format
     output_raw = f"{prefix}.stru"
     gd.write_structure(output_raw)
 
@@ -77,6 +86,7 @@ def main():
 
             fout.write("\t".join(parts1) + "\n")
             fout.write("\t".join(parts2) + "\n")
+
 
 if __name__ == "__main__":
     main()

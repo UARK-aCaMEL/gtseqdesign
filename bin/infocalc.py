@@ -39,6 +39,7 @@ import numpy as np
 
 # ------------------------------------------------ utility functions
 
+
 def factorial(n: int) -> int:
     return math.prod(range(1, n + 1)) or 1
 
@@ -59,6 +60,7 @@ def unsigned_stirling_first(n: int, k: int) -> int:
 
 # ------------------------------------------------ In (assignment)
 
+
 def In_locus(p_vec: np.ndarray, q: np.ndarray) -> float:
     """Rosenberg eq. 4 with arbitrary priors q_i."""
     info = 0.0
@@ -72,6 +74,7 @@ def In_locus(p_vec: np.ndarray, q: np.ndarray) -> float:
 
 
 # ----------------------------------------------- Ia (uniform prior)
+
 
 def Ia_locus_uniform(p_vec: np.ndarray) -> float:
     """Rosenberg eq. 14. Returns −9999 when denominator → 0."""
@@ -92,21 +95,23 @@ def Ia_locus_uniform(p_vec: np.ndarray) -> float:
             denom = K * np.prod([p_ij - allele[r] for r in range(K) if r != i])
             if denom == 0.0:
                 return -9999.0
-            Ia += (p_ij ** K) * math.log(p_ij) / denom
+            Ia += (p_ij**K) * math.log(p_ij) / denom
     return Ia
 
 
 # ------------------------------------------- ORCA diploid (biallelic)
 
+
 def orca_diploid(p_vec: np.ndarray, q: np.ndarray) -> float:
     """Diploid genotype optimal assignment (eq. 12, L = 1)."""
     P_A = p_vec
     P_B = 1.0 - p_vec
-    geno = np.stack([P_A ** 2, 2 * P_A * P_B, P_B ** 2])  # AA, AB, BB
+    geno = np.stack([P_A**2, 2 * P_A * P_B, P_B**2])  # AA, AB, BB
     return sum((q * geno[g]).max() for g in range(3))
 
 
 # ------------------------------------------------------------- main
+
 
 def main():
     ap = argparse.ArgumentParser(
@@ -136,22 +141,24 @@ def main():
     q_uniform = np.full(K, 1.0 / K)
 
     # ---- allocate result arrays
-    In_vals  = np.empty(L)
-    Ia_vals  = np.empty(L)
+    In_vals = np.empty(L)
+    Ia_vals = np.empty(L)
     ORCA_vals = np.empty(L)
 
     # ---- compute per locus
     for i in range(L):
         p_vec = P[i]
-        In_vals[i]   = In_locus(p_vec, q)
-        Ia_vals[i]   = Ia_locus_uniform(p_vec)
+        In_vals[i] = In_locus(p_vec, q)
+        Ia_vals[i] = Ia_locus_uniform(p_vec)
         ORCA_vals[i] = orca_diploid(p_vec, q)  # same priors as In
 
     # ---- write TSV
     with open(args.outfile, "w") as fh:
         fh.write("locus_idx\tIn\tIa\tORCA\n")
         for idx in range(L):
-            fh.write(f"{idx}\t{In_vals[idx]:.10g}\t{Ia_vals[idx]:.10g}\t{ORCA_vals[idx]:.10g}\n")
+            fh.write(
+                f"{idx}\t{In_vals[idx]:.10g}\t{Ia_vals[idx]:.10g}\t{ORCA_vals[idx]:.10g}\n"
+            )
 
     print(f"Done → {args.outfile}   (L={L}, K={K})")
     print("q_i priors:", " ".join(f"{x:.4f}" for x in q))

@@ -13,7 +13,6 @@ process ADMIXTUREPIPELINE {
     tuple val(meta), path("${meta.id}*.stdout"),         emit: logs
     tuple val(meta), path("${meta.id}*.Q"),              emit: qfiles
     tuple val(meta), path("${meta.id}*.P"),              emit: pfiles
-    tuple val(meta), path("${meta.id}.imiss"),           emit: imiss
     tuple val(meta), path("${meta.id}_pops.txt"),        emit: pops
     tuple val(meta), path("${meta.id}_inds.txt"),        emit: inds
     tuple val(meta), path("${meta.id}.map"),             emit: map
@@ -37,8 +36,8 @@ process ADMIXTUREPIPELINE {
         -n ${task.cpus} \\
         -k 1 \\
         -K ${maxk} \\
-        -C ${params.ind_cov} \\
-        -S 0.1 \\
+        -C 1.0 \\
+        -S 0.0 \\
         ${args}
 
     cat <<-END_VERSIONS > versions.yml
