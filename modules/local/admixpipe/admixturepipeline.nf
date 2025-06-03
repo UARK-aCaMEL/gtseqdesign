@@ -13,7 +13,6 @@ process ADMIXTUREPIPELINE {
     tuple val(meta), path("${meta.id}*.stdout"),         emit: logs
     tuple val(meta), path("${meta.id}*.Q"),              emit: qfiles
     tuple val(meta), path("${meta.id}*.P"),              emit: pfiles
-    tuple val(meta), path("${meta.id}.imiss"),           emit: imiss
     tuple val(meta), path("${meta.id}_pops.txt"),        emit: pops
     tuple val(meta), path("${meta.id}_inds.txt"),        emit: inds
     tuple val(meta), path("${meta.id}.map"),             emit: map
