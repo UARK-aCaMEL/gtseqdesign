@@ -1,3 +1,11 @@
+<h1>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/images/acamel_gtseqdesign_logo_dark.png">
+    <img alt="aCaMEL/gtseqdesign" src="docs/images/acamel_gtseqdesign_logo_light.png">
+  </picture>
+</h1>
+
+
 [![GitHub Actions CI Status](https://github.com/aCaMEL/gtseqdesign/actions/workflows/ci.yml/badge.svg)](https://github.com/aCaMEL/gtseqdesign/actions/workflows/ci.yml)
 [![GitHub Actions Linting Status](https://github.com/aCaMEL/gtseqdesign/actions/workflows/linting.yml/badge.svg)](https://github.com/aCaMEL/gtseqdesign/actions/workflows/linting.yml)[![Cite with Zenodo](http://img.shields.io/badge/DOI-10.5281/zenodo.XXXXXXX-1073c8?labelColor=000000)](https://doi.org/10.5281/zenodo.XXXXXXX)
 [![nf-test](https://img.shields.io/badge/unit_tests-nf--test-337ab7.svg)](https://www.nf-test.com)
@@ -10,20 +18,24 @@
 
 ## Introduction
 
-**aCaMEL/gtseqdesign** is a bioinformatics pipeline that ...
+**aCaMEL/gtseqdesign** is a Nextflow pipeline for GT-seq panel design. It filters and scores SNPs based on their utility for distinguishing population structure, using metrics from **Rosenberg et al. (2003)** and structure results from **ADMIXTURE**.
 
-<!-- TODO nf-core:
-   Complete this sentence with a 2-3 sentence summary of what types of data the pipeline ingests, a brief overview of the
-   major pipeline sections and the types of output it produces. You're giving an overview to someone new
-   to nf-core here, in 15-20 seconds. For an example, see https://github.com/nf-core/rnaseq/blob/master/README.md#introduction
--->
+The pipeline takes VCF and population map inputs and produces filtered SNP panels, summary figures, and MultiQC reports.
 
-<!-- TODO nf-core: Include a figure that guides the user through the major workflow steps. Many nf-core
-     workflows use the "tube map" design for that. See https://nf-co.re/docs/contributing/design_guidelines#examples for examples.   -->
-<!-- TODO nf-core: Fill in short bullet-pointed list of the default steps in the pipeline -->
+### Overview
 
-1. Read QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/))
-2. Present QC for raw reads ([`MultiQC`](http://multiqc.info/))
+> A subway-style diagram will be added soon.
+
+### Main Steps
+
+1. Optional psuedo-reference generation from reduced-representation catalogs (when FASTA reference unavailable)
+2. SNP filtering using [SNPio](https://github.com/btmartin721/SNPio)
+3. Population inference using [ADMIXTURE](https://dalexander.github.io/admixture/) via [AdmixPipe](https://github.com/stevemussmann/admixturePipeline)
+4. Cluster alignment with [CLUMPAK](https://clumpak.tau.ac.il) and visualization with [Distruct](https://rosenberglab.stanford.edu/distruct.html)
+5. Locus ranking with [infocalc](https://rosenberglab.stanford.edu/infocalc.html) (Rosenberg et al. 2003)
+6. Panel selection and downstream re-analysis
+7. Summary output with [MultiQC](https://docs.seqera.io/multiqc#data-as-part-of-multiqc-config)
+
 
 ## Usage
 
