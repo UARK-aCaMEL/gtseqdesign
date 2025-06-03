@@ -11,9 +11,9 @@ process COMPARE_ADMIXTURE {
         tuple val(meta4), path(pops,        stageAs: 'populations.txt')
 
     output:
-        path("*_regression_min_max.html"), emit: min_max_html
-        path("*_entropy_comparison.html"), emit: entropy_html
-        path("*_summary_metrics.csv"), emit: summary_csv
+        path("*_regression_min_max_mqc.html"), emit: min_max_html
+        path("*_entropy_mqc.html"), emit: entropy_html
+        path("*_summary_metrics_mqc.json"), emit: summary_json
         path("versions.yml"), emit: versions
 
     script:
@@ -25,6 +25,8 @@ process COMPARE_ADMIXTURE {
         --individuals individuals.txt \\
         --populations populations.txt \\
         --prefix "comparison" \\
+        --regression_header ${baseDir}/assets/multiqc_min_max.html \\
+        --entropy_header ${baseDir}/assets/multiqc_entropy.html \\
         ${args}
 
     plotly_version=\$(python3 -c 'import plotly; print(plotly.__version__)')

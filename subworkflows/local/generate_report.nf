@@ -52,6 +52,11 @@ workflow GENERATE_REPORT {
         inds,
         pops
     )
+    ch_mqc_files = ch_mqc_files
+        | mix( COMPARE_ADMIXTURE.out.min_max_html )
+        | mix( COMPARE_ADMIXTURE.out.entropy_html )
+        | mix( COMPARE_ADMIXTURE.out.summary_json )
+    ch_versions = ch_versions.mix( COMPARE_ADMIXTURE.out.versions )
 
     //Admixture barplots
 

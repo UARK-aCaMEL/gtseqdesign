@@ -29,10 +29,43 @@ custom_data:
     file_search_pattern:
       - "*sample_summary*"
 
-  cvplot_mqc.html:
+  cvp:
     id: "cvp"
+    parent_id: "genetic_structure"
+    section_name: "Best K by cross-validation"
     plot_type: "html"
+    file_search_pattern:
+      - "*cvplot_mqc.html"
+
+  admixture_regression:
+    id: "admixture_regression"
+    parent_id: "genetic_structure"
+    section_name: "Regression of Assignment Probabilities"
+    plot_type: "html"
+    file_search_pattern:
+      - "*regression_min_max_mqc.html"
+
+  admixture_entropy:
+    id: "admixture_entropy"
+    parent_id: "genetic_structure"
+    section_name: "Entropy of Assignment Probabilities"
+    plot_type: "html"
+    file_search_pattern:
+      - "*entropy_mqc.html"
+
+  admixture_summary:
+    id: "admixture_summary"
+    parent_id: "genetic_structure"
+    section_name: "Summary of Filtering Effects on Admixture"
+    plot_type: "table"
+    file_format: "json"
+    file_search_pattern:
+      - "*summary_metrics_mqc.csv"
 
 custom_content:
   order:
+    - admixture_summary
     - cvp
+    - admixture_regression
+    - admixture_entropy
+

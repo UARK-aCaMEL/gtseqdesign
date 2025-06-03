@@ -14,7 +14,7 @@ process FILTER_POSITIONS {
 
     output:
     tuple val(meta), path("${meta.id}.filtered.vcf.gz"), emit: vcf
-    tuple val(meta), path("${meta.id}.filtered.vcf.gz.tbi"), emit: tbi, optional: true
+    tuple val(meta), path("${meta.id}.filtered.vcf.gz.tbi"), emit: tbi
     path "versions.yml", emit: versions
 
     script:
@@ -35,7 +35,7 @@ process FILTER_POSITIONS {
         ${vcf}
 
     echo "📦 Indexing filtered VCF..."
-    bcftools index ${meta.id}.filtered.vcf.gz
+    bcftools index -t ${meta.id}.filtered.vcf.gz
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

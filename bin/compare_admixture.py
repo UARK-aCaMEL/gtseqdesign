@@ -7,7 +7,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import os
-import csv
+import json
 from pathlib import Path
 
 def parse_q_file(path):
@@ -43,7 +43,6 @@ def compute_metrics(q_pre, q_post):
     delta_entropy = mean_ent_post - mean_ent_pre
 
     metrics = {
-        "K Match": k_equal,
         "R² (Max Assignment)": reg_max.rvalue ** 2,
         "Slope (Max Assignment)": reg_max.slope,
         "R² (Min Assignment)": reg_min.rvalue ** 2,
@@ -58,6 +57,13 @@ def compute_metrics(q_pre, q_post):
     }
 
     return metrics, pre_max, post_max, pre_min, post_min, ent_pre, ent_post
+
+def prepend_header(header_path, html_path):
+    if header_path:
+        with open(header_path) as h, open(html_path, 'r+') as f:
+            content = f.read()
+            f.seek(0)
+            f.write(h.read() + '\n' + content)
 
 def make_entropy_plot(ent_pre, ent_post, individuals, populations, output_html):
     df = pd.DataFrame({
@@ -113,11 +119,28 @@ def make_side_by_side_regression(pre_max, post_max, pre_min, post_min, individua
 
     fig.write_html(output_html)
 
-def save_metrics_table(metrics, output_path):
-    df = pd.DataFrame([metrics])
-    df.to_csv(output_path if output_path.endswith(".csv") else output_path + ".csv",
-            index=False,
-            quoting=csv.QUOTE_ALL)
+def write_summary_json(metrics: dict, output_path: str, sample_id="summary"):
+    data_block = {sample_id: {str(k): v for k, v in metrics.items()}}
+
+    json_obj = {
+        "id": "admixture_summary",
+        "parent_id": "genetic_structure",
+        "section_name": "Summary of Filtering Effects on Admixture",
+        "description": "Metrics summarizing the effect of filtering on ADMIXTURE-based assignment.",
+        "plot_type": "table",
+        "pconfig": {
+            "id": "admixture_summary_plot",
+            "title": "Filtering Metrics Summary",
+            "ylab": "Value",
+            "xlab": "Metric",
+            "xDecimals": False,
+            "tt_label": "Metric"
+        },
+        "data": data_block
+    }
+
+    with open(output_path, "w") as f:
+        json.dump(json_obj, f, indent=2)
 
 def main():
     parser = argparse.ArgumentParser(description="Compare pre- and post-filter Q matrices.")
@@ -126,6 +149,8 @@ def main():
     parser.add_argument("--individuals", required=True)
     parser.add_argument("--populations", required=True)
     parser.add_argument("--prefix", required=True, help="Prefix for output files (may include directories)")
+    parser.add_argument("--entropy_header", required=False, help="Header file to prepend to entropy HTML")
+    parser.add_argument("--regression_header", required=False, help="Header file to prepend to regression HTML")
     args = parser.parse_args()
 
     prefix_path = Path(args.prefix)
@@ -143,18 +168,17 @@ def main():
     for k, v in metrics.items():
         print(f"{k}: {v:.4f}" if isinstance(v, float) else f"{k}: {v}")
 
-    make_entropy_plot(
-        ent_pre, ent_post, individuals, populations,
-        f"{args.prefix}_entropy_comparison.html"
-    )
+    entropy_html = f"{args.prefix}_entropy_mqc.html"
+    regression_html = f"{args.prefix}_regression_min_max_mqc.html"
+    metrics_json = f"{args.prefix}_summary_metrics_mqc.json"
 
-    make_side_by_side_regression(
-        pre_max, post_max, pre_min, post_min,
-        individuals, populations,
-        f"{args.prefix}_regression_min_max.html"
-    )
+    make_entropy_plot(ent_pre, ent_post, individuals, populations, entropy_html)
+    prepend_header(args.entropy_header, entropy_html)
 
-    save_metrics_table(metrics, f"{args.prefix}_summary_metrics.csv")
+    make_side_by_side_regression(pre_max, post_max, pre_min, post_min, individuals, populations, regression_html)
+    prepend_header(args.regression_header, regression_html)
+
+    write_summary_json(metrics, metrics_json)
 
 if __name__ == "__main__":
     main()

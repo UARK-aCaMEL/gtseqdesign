@@ -101,7 +101,6 @@ workflow GTSEQDESIGN {
         ch_candidates_tbi = ch_filtered_tbi
     }
 
-
     //
     // Compute locus-wise importance metrics
     //
