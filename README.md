@@ -5,7 +5,6 @@
   </picture>
 </h1>
 
-
 [![GitHub Actions CI Status](https://github.com/aCaMEL/gtseqdesign/actions/workflows/ci.yml/badge.svg)](https://github.com/aCaMEL/gtseqdesign/actions/workflows/ci.yml)
 [![GitHub Actions Linting Status](https://github.com/aCaMEL/gtseqdesign/actions/workflows/linting.yml/badge.svg)](https://github.com/aCaMEL/gtseqdesign/actions/workflows/linting.yml)[![Cite with Zenodo](http://img.shields.io/badge/DOI-10.5281/zenodo.XXXXXXX-1073c8?labelColor=000000)](https://doi.org/10.5281/zenodo.XXXXXXX)
 [![nf-test](https://img.shields.io/badge/unit_tests-nf--test-337ab7.svg)](https://www.nf-test.com)
@@ -35,7 +34,6 @@ The pipeline takes VCF and population map inputs and produces filtered SNP panel
 5. Locus ranking with [infocalc](https://rosenberglab.stanford.edu/infocalc.html) (Rosenberg et al. 2003)
 6. Panel selection and downstream re-analysis
 7. Summary output with [MultiQC](https://docs.seqera.io/multiqc#data-as-part-of-multiqc-config)
-
 
 ## Usage
 
