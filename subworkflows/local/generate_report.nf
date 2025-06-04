@@ -5,6 +5,7 @@ include { PLOT_CV } from '../../modules/local/report/plot_cv.nf'
 include { SAMPLE_SUMMARY } from '../../modules/local/report/sample_summary.nf'
 include { COMPARE_ADMIXTURE } from '../../modules/local/report/compare_admixture.nf'
 include { PLOT_ADMIXTURE } from '../../modules/local/report/plot_admixture.nf'
+include { FILTER_SUMMARY } from '../../modules/local/report/filter_summary.nf'
 include { BCFTOOLS_QUERY as BCFTOOLS_QUERY_PRE } from '../../modules/local/bcftools_query.nf'
 include { BCFTOOLS_QUERY as BCFTOOLS_QUERY_POST } from '../../modules/local/bcftools_query.nf'
 
@@ -75,6 +76,8 @@ workflow GENERATE_REPORT {
     ch_versions = ch_versions.mix( COMPARE_ADMIXTURE.out.versions )
 
     //SNPio plots
+    FILTER_SUMMARY( snpio_pre )
+    ch_mqc_files = ch_mqc_files.mix( FILTER_SUMMARY.out.sankey_html )
 
     emit:
     mqc_files    = ch_mqc_files
