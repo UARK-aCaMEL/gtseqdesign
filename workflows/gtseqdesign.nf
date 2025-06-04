@@ -17,6 +17,7 @@ include { SNPIO_PRE_FILTER as SNPIO_FILTER } from '../modules/local/snpio/pre_fi
 include { LIST_CHROMS } from '../modules/local/list_chroms.nf'
 include { GENERATE_CONSENSUS } from '../modules/local/generate_consensus.nf'
 include { FILTER_POSITIONS } from '../modules/local/filter_positions.nf'
+include { CUSTOMIZE_REPORT } from '../modules/local/report/customize_report.nf'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -193,6 +194,9 @@ workflow GTSEQDESIGN {
         ch_multiqc_custom_config.toList(),
         ch_multiqc_logo.toList()
     )
+
+    // Customize report
+    CUSTOMIZE_REPORT( MULTIQC.out.report )
 
     emit:
     multiqc_report = MULTIQC.out.report.toList() // channel: /path/to/multiqc_report.html

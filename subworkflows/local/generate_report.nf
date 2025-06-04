@@ -4,6 +4,7 @@
 include { PLOT_CV } from '../../modules/local/report/plot_cv.nf'
 include { SAMPLE_SUMMARY } from '../../modules/local/report/sample_summary.nf'
 include { COMPARE_ADMIXTURE } from '../../modules/local/report/compare_admixture.nf'
+include { PLOT_ADMIXTURE } from '../../modules/local/report/plot_admixture.nf'
 include { BCFTOOLS_QUERY as BCFTOOLS_QUERY_PRE } from '../../modules/local/bcftools_query.nf'
 include { BCFTOOLS_QUERY as BCFTOOLS_QUERY_POST } from '../../modules/local/bcftools_query.nf'
 
@@ -59,6 +60,19 @@ workflow GENERATE_REPORT {
     ch_versions = ch_versions.mix( COMPARE_ADMIXTURE.out.versions )
 
     //Admixture barplots
+    ch_clumpp_pre  = clumpp_pre.map  { meta, file -> tuple(meta + [id: 'pre'], file) }
+    ch_clumpp_post = clumpp_post.map { meta, file -> tuple(meta + [id: 'post'], file) }
+    ch_clumpp_all = ch_clumpp_pre.mix( ch_clumpp_post )
+    ch_inds = inds.map { meta, path -> path }
+    ch_pops = pops.map { meta, path -> path }
+    ch_plot_admix = ch_clumpp_all
+        .combine(ch_inds)
+        .combine(ch_pops)
+    PLOT_ADMIXTURE(
+        ch_plot_admix
+    )
+    ch_mqc_files = ch_mqc_files.mix( PLOT_ADMIXTURE.out.admixture_html )
+    ch_versions = ch_versions.mix( COMPARE_ADMIXTURE.out.versions )
 
     //SNPio plots
 
