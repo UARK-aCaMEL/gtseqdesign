@@ -23,7 +23,7 @@ The pipeline takes VCF and population map inputs and produces filtered SNP panel
 
 ### Overview
 
-> A subway-style diagram will be added soon.
+<img src="./docs/images/acamel_gtseqdesign_metro_map.png" alt="aCaMEL/gtseqdesign overview" width="600"/>
 
 ### Main Steps
 
