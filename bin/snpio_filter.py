@@ -38,6 +38,12 @@ def main():
         default=0.05,
         help="Maximum MAF to retain a SNP (default: 0.05)",
     )
+    parser.add_argument(
+        "--snp_cov",
+        type=float,
+        default=0.9,
+        help="Maximum missing data to retain a SNP (default: 0.9)",
+    )
     args = parser.parse_args()
 
     # extract prefix from VCF filename
@@ -62,8 +68,9 @@ def main():
     nrm = NRemover2(gd)
     gd_filt = (
         nrm.thin_loci(remove_all=True, size=args.flank_dist)
-        .filter_missing_sample(args.ind_cov)
         .filter_monomorphic(exclude_heterozygous=False)
+        .filter_missing_sample(args.ind_cov)
+        .filter_missing(args.snp_cov)
         .filter_maf(args.min_maf)
         .resolve()
     )

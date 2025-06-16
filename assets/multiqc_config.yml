@@ -25,6 +25,8 @@ report_section_order:
     order: 35
   admixture_summary:
     order: 36
+  locus_ranking:
+    order: 40
   "aCaMEL-gtseqdesign-methods-description":
     order: -1000
   software_versions:

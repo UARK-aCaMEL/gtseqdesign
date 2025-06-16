@@ -134,13 +134,17 @@ workflow GTSEQDESIGN {
         ch_tbi,
         ch_filtered_vcf,
         ch_filtered_tbi,
+        ch_selected_vcf,
+        ch_selected_tbi,
         ADMIXPIPE_PRE.out.cv_file,
         ch_snpio_output,
         ch_selected_snpio_output,
         ADMIXPIPE_PRE.out.bestK_clumpp,
         ADMIXPIPE_POST.out.bestK_clumpp,
         ADMIXPIPE_POST.out.inds,
-        ADMIXPIPE_POST.out.pops
+        ADMIXPIPE_POST.out.pops,
+        SELECT_CANDIDATES.out.metrics,
+        SELECT_CANDIDATES.out.top_loci
     )
     ch_versions = ch_versions.mix( GENERATE_REPORT.out.versions )
     ch_multiqc_files = ch_multiqc_files.mix( GENERATE_REPORT.out.mqc_files )

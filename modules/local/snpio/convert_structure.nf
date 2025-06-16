@@ -2,7 +2,7 @@ process SNPIO_CONVERT_STRUCTURE {
     tag "$meta.id"
     label 'process_low'
 
-    container 'docker.io/btmartin721/snpio:1.3.6'
+    container 'docker.io/btmartin721/snpio:1.3.21'
 
     input:
     tuple val(meta), path(vcf)
@@ -25,7 +25,7 @@ process SNPIO_CONVERT_STRUCTURE {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        SNPio: 1.3.6
+        SNPio: 1.3.21
     END_VERSIONS
     """
 }

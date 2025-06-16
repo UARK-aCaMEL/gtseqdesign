@@ -5,7 +5,6 @@ import pandas as pd
 import plotly.graph_objs as go
 import plotly.io as pio
 
-
 def parse_template(template_file):
     """Extract metadata from the MultiQC-style HTML comment block."""
     with open(template_file, "r") as f:
@@ -21,7 +20,6 @@ def parse_template(template_file):
             meta[key.strip()] = value.strip().strip("\"'")
     return meta
 
-
 def build_comment(meta_dict):
     lines = ["<!--"]
     for key, value in meta_dict.items():
@@ -29,10 +27,13 @@ def build_comment(meta_dict):
     lines.append("-->")
     return "\n".join(lines)
 
-
 def generate_plot(input_file, output_file, header_comment):
+    # 1) read & sort
     df = pd.read_csv(input_file, delim_whitespace=True)
+    df['K'] = pd.to_numeric(df['K'], errors='raise')
+    df = df.sort_values('K')
 
+    # 2) build the figure
     fig = go.Figure()
     fig.add_trace(
         go.Scatter(
@@ -45,6 +46,7 @@ def generate_plot(input_file, output_file, header_comment):
             line=dict(width=2),
         )
     )
+
     fig.update_layout(
         title="Cross-validation Error by K",
         xaxis_title="K",
@@ -52,10 +54,10 @@ def generate_plot(input_file, output_file, header_comment):
         template="plotly_white",
     )
 
+    # 3) write out with your MultiQC comment header
     html = pio.to_html(fig, full_html=False, include_plotlyjs="cdn")
     with open(output_file, "w") as f:
         f.write(header_comment + "\n" + html)
-
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
@@ -83,14 +85,10 @@ if __name__ == "__main__":
 
     # Load and override template
     metadata = parse_template(args.template)
-    if args.id:
-        metadata["id"] = args.id
-    if args.title:
-        metadata["title"] = args.title
-    if args.section_name:
-        metadata["section_name"] = args.section_name
-    if args.description:
-        metadata["description"] = args.description
+    for fld in ("id", "title", "section_name", "description"):
+        val = getattr(args, fld)
+        if val:
+            metadata[fld] = val
 
     header_comment = build_comment(metadata)
     generate_plot(args.input_file, args.output, header_comment)
