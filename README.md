@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 <h1>
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/images/acamel_gtseqdesign_logo_dark.png">
@@ -8,10 +7,6 @@
 
 [![GitHub Actions CI Status](https://github.com/aCaMEL/gtseqdesign/actions/workflows/ci.yml/badge.svg)](https://github.com/aCaMEL/gtseqdesign/actions/workflows/ci.yml)
 [![GitHub Actions Linting Status](https://github.com/aCaMEL/gtseqdesign/actions/workflows/linting.yml/badge.svg)](https://github.com/aCaMEL/gtseqdesign/actions/workflows/linting.yml)[![Cite with Zenodo](http://img.shields.io/badge/DOI-10.5281/zenodo.XXXXXXX-1073c8?labelColor=000000)](https://doi.org/10.5281/zenodo.XXXXXXX)
-=======
-[![GitHub Actions CI Status](https://github.com/aCaMEL/acamel-gtseqdesign/actions/workflows/ci.yml/badge.svg)](https://github.com/aCaMEL/acamel-gtseqdesign/actions/workflows/ci.yml)
-[![GitHub Actions Linting Status](https://github.com/aCaMEL/acamel-gtseqdesign/actions/workflows/linting.yml/badge.svg)](https://github.com/aCaMEL/acamel-gtseqdesign/actions/workflows/linting.yml)[![Cite with Zenodo](http://img.shields.io/badge/DOI-10.5281/zenodo.XXXXXXX-1073c8?labelColor=000000)](https://doi.org/10.5281/zenodo.XXXXXXX)
->>>>>>> TEMPLATE
 [![nf-test](https://img.shields.io/badge/unit_tests-nf--test-337ab7.svg)](https://www.nf-test.com)
 
 [![Nextflow](https://img.shields.io/badge/nextflow%20DSL2-%E2%89%A523.04.0-23aa62.svg)](https://www.nextflow.io/)
@@ -22,11 +17,7 @@
 
 ## Introduction
 
-<<<<<<< HEAD
 **aCaMEL/gtseqdesign** is a Nextflow pipeline for GT-seq panel design. It filters and scores SNPs based on their utility for distinguishing population structure, using metrics from **Rosenberg et al. (2003)** and structure results from **ADMIXTURE**.
-=======
-**aCaMEL/acamel-gtseqdesign** is a bioinformatics pipeline that ...
->>>>>>> TEMPLATE
 
 The pipeline takes VCF and population map inputs and produces filtered SNP panels, summary figures, and MultiQC reports.
 
@@ -74,35 +65,6 @@ The pipeline takes VCF and population map inputs and produces filtered SNP panel
 > [!NOTE]
 > If you are new to Nextflow and nf-core, please refer to [this page](https://nf-co.re/docs/usage/installation) on how to set-up Nextflow. Make sure to [test your setup](https://nf-co.re/docs/usage/introduction#how-to-run-a-pipeline) with `-profile test` before running the workflow on actual data.
 
-<<<<<<< HEAD
-=======
-<!-- TODO nf-core: Describe the minimum required steps to execute the pipeline, e.g. how to prepare samplesheets.
-     Explain what rows and columns represent. For instance (please edit as appropriate):
-
-First, prepare a samplesheet with your input data that looks as follows:
-
-`samplesheet.csv`:
-
-```csv
-sample,fastq_1,fastq_2
-CONTROL_REP1,AEG588A1_S1_L002_R1_001.fastq.gz,AEG588A1_S1_L002_R2_001.fastq.gz
-```
-
-Each row represents a fastq file (single-end) or a pair of fastq files (paired end).
-
--->
-
-Now, you can run the pipeline using:
-
-<!-- TODO nf-core: update the following command to include all required parameters for a minimal example -->
-
-```bash
-nextflow run aCaMEL/acamel-gtseqdesign \
-   -profile <docker/singularity/.../institute> \
-   --input samplesheet.csv \
-   --outdir <OUTDIR>
-```
->>>>>>> TEMPLATE
 
 > [!WARNING]
 > Please provide pipeline parameters via the CLI or Nextflow `-params-file` option. Custom config files including those provided by the `-c` Nextflow option can be used to provide any configuration _**except for parameters**_;
@@ -110,11 +72,7 @@ nextflow run aCaMEL/acamel-gtseqdesign \
 
 ## Credits
 
-<<<<<<< HEAD
 aCaMEL/gtseqdesign was originally written by [Tyler K. Chafin](https://github.com/tkchafin).
-=======
-aCaMEL/acamel-gtseqdesign was originally written by Tyler K. Chafin.
->>>>>>> TEMPLATE
 
 We thank the following people for their extensive assistance in the development of this pipeline:
 
