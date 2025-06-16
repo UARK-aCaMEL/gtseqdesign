@@ -17,6 +17,7 @@ include { SNPIO_PRE_FILTER as SNPIO_FILTER } from '../modules/local/snpio/pre_fi
 include { LIST_CHROMS } from '../modules/local/list_chroms.nf'
 include { GENERATE_CONSENSUS } from '../modules/local/generate_consensus.nf'
 include { FILTER_POSITIONS } from '../modules/local/filter_positions.nf'
+include { CUSTOMIZE_REPORT } from '../modules/local/report/customize_report.nf'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -24,7 +25,7 @@ include { FILTER_POSITIONS } from '../modules/local/filter_positions.nf'
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-workflow GTSEQDESIGN {
+workflow ACAMEL-GTSEQDESIGN {
 
     take:
     ch_vcf     // [meta, vcf]
@@ -133,13 +134,17 @@ workflow GTSEQDESIGN {
         ch_tbi,
         ch_filtered_vcf,
         ch_filtered_tbi,
+        ch_selected_vcf,
+        ch_selected_tbi,
         ADMIXPIPE_PRE.out.cv_file,
         ch_snpio_output,
         ch_selected_snpio_output,
         ADMIXPIPE_PRE.out.bestK_clumpp,
         ADMIXPIPE_POST.out.bestK_clumpp,
         ADMIXPIPE_POST.out.inds,
-        ADMIXPIPE_POST.out.pops
+        ADMIXPIPE_POST.out.pops,
+        SELECT_CANDIDATES.out.metrics,
+        SELECT_CANDIDATES.out.top_loci
     )
     ch_versions = ch_versions.mix( GENERATE_REPORT.out.versions )
     ch_multiqc_files = ch_multiqc_files.mix( GENERATE_REPORT.out.mqc_files )
@@ -193,6 +198,9 @@ workflow GTSEQDESIGN {
         ch_multiqc_custom_config.toList(),
         ch_multiqc_logo.toList()
     )
+
+    // Customize report
+    CUSTOMIZE_REPORT( MULTIQC.out.report )
 
     emit:
     multiqc_report = MULTIQC.out.report.toList() // channel: /path/to/multiqc_report.html

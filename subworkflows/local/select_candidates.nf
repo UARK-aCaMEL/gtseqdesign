@@ -57,5 +57,7 @@ workflow SELECT_CANDIDATES {
     vcf          = SUBSET_BY_INDEX.out.vcf
     tbi          = SUBSET_BY_INDEX.out.tbi
     snpio_output = SNPIO_CONVERT_STRUCTURE.out.snpio_output
+    metrics      = INFOCALC.out.metrics
+    top_loci     = RANK_LOCI.out.top_loci
     versions     = ch_versions
 }

@@ -1,7 +1,7 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema",
-    "$id": "https://raw.githubusercontent.com/aCaMEL/gtseqdesign/master/nextflow_schema.json",
-    "title": "aCaMEL/gtseqdesign pipeline parameters",
+    "$id": "https://raw.githubusercontent.com/aCaMEL/acamel-gtseqdesign/master/nextflow_schema.json",
+    "title": "aCaMEL/acamel-gtseqdesign pipeline parameters",
     "description": "aCaMEL NextFlow DSL2 pipeline for designing GTSeq assays from genotyped SNP data",
     "type": "object",
     "definitions": {
@@ -10,14 +10,17 @@
             "type": "object",
             "fa_icon": "fas fa-terminal",
             "description": "Define where the pipeline should find input data and save output data.",
-            "required": ["input", "outdir", "reference", "popmap"],
+            "required": ["input", "outdir"],
             "properties": {
                 "input": {
                     "type": "string",
                     "format": "file-path",
                     "exists": true,
                     "pattern": "^\\S+(\\.vcf(\\.gz)?|\\.bcf(\\.gz)?)$",
-                    "mimetype": ["text/vcf", "application/x-gzip"],
+                    "mimetype": [
+                        "text/vcf",
+                        "application/x-gzip"
+                    ],
                     "description": "Path to genotypes as .vcf, .bcf, .vcf.gz, or .bcf.gz",
                     "help_text": "You will need to create a design file with information about the samples in your experiment before running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with 3 columns, and a header row.",
                     "fa_icon": "fas fa-file-csv"
@@ -28,27 +31,17 @@
                     "description": "The output directory where the results will be saved. You have to use absolute paths to storage on Cloud infrastructure.",
                     "fa_icon": "fas fa-folder-open"
                 },
-                "reference": {
-                    "type": "string",
-                    "description": "Reference file used for assembly (as .fasta or .loci for denovo RADseq)"
-                },
-                "popmap": {
-                    "type": "string",
-                    "description": "Tab-delimited population map file"
-                },
                 "email": {
                     "type": "string",
                     "description": "Email address for completion summary.",
                     "fa_icon": "fas fa-envelope",
                     "help_text": "Set this parameter to your e-mail address to get a summary e-mail with details of the run sent to you when the workflow exits. If set in your user config file (`~/.nextflow/config`) then you don't need to specify this on the command line for every run.",
-                    "pattern": "^([a-zA-Z0-9_\\-\\.]+)@([a-zA-Z0-9_\\-\\.]+)\\.([a-zA-Z]{2,5})$",
-                    "hidden": true
+                    "pattern": "^([a-zA-Z0-9_\\-\\.]+)@([a-zA-Z0-9_\\-\\.]+)\\.([a-zA-Z]{2,5})$"
                 },
                 "multiqc_title": {
                     "type": "string",
                     "description": "MultiQC report title. Printed as page header, used for filename if not otherwise specified.",
-                    "fa_icon": "fas fa-file-signature",
-                    "hidden": true
+                    "fa_icon": "fas fa-file-signature"
                 }
             }
         },
@@ -58,20 +51,33 @@
             "description": "",
             "default": "",
             "properties": {
+                "popmap": {
+                    "type": "string",
+                    "description": "Tab-delimited population map file"
+                },
+                "reference": {
+                    "type": "string",
+                    "description": "Reference file used for assembly (as .fasta or .loci for denovo RADseq)"
+                },
                 "maxk": {
                     "type": "integer",
                     "default": 10,
                     "description": "Maximum K value to run for ADMIXTURE"
                 },
-                "primer_length": {
-                    "type": "integer",
-                    "default": 75,
-                    "description": "GTseq primer length; used to assess SNPs for flanking variants"
-                },
                 "ind_cov": {
                     "type": "number",
                     "default": 0.9,
                     "description": "Missing data threshold to retain an individual (where 0=no missing data and 1=all missing data)"
+                },
+                "snp_cov": {
+                    "type": "number",
+                    "default": 0.9,
+                    "description": "Missing data threshold to retain a SNP"
+                },
+                "primer_length": {
+                    "type": "integer",
+                    "default": 75,
+                    "description": "GTseq primer length; used to assess SNPs for flanking variants"
                 },
                 "fully_contained": {
                     "type": "boolean",

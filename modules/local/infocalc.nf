@@ -1,6 +1,6 @@
 process INFOCALC{
     tag "$meta.id"
-    label 'process_small'
+    label 'process_single'
 
     conda "conda-forge::perl=5.32"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?

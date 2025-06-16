@@ -176,6 +176,7 @@ def nfCoreLogo(monochrome_logs=true) {
     )
 }
 
+
 //
 // Return dashed line
 //

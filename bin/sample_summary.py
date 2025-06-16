@@ -47,7 +47,8 @@ def parse_html_header(path):
 
 def write_mqc_json(df, metadata, output_path):
     """
-    Write a MultiQC-style table JSON with one row per sample.
+    Write a MultiQC-style table JSON with one row per sample,
+    including all metadata fields from the header.
     """
     data_block = {
         str(row["Sample"]): {
@@ -56,15 +57,11 @@ def write_mqc_json(df, metadata, output_path):
         for _, row in df.iterrows()
     }
 
+    # Build base structure
     json_obj = {
-        "id": metadata.get("id", "sample_summary"),
-        "parent_id": metadata.get("parent_id", "summary"),
-        "parent_name": metadata.get("parent_name", "Summary"),
-        "section_name": metadata.get("section_name", "Sample Summary Table"),
-        "description": metadata.get("description", "Summary per sample."),
-        "plot_type": metadata.get("plot_type", "table"),
+        "data": data_block,
         "pconfig": {
-            "id": metadata.get("id", "sample_summary_plot"),
+            "id": metadata.get("id", metadata.get("section_name", "summary_plot")),
             "title": metadata.get("section_name", "Sample Summary Table"),
             "ylab": "Value",
             "xlab": "Metric",
@@ -73,9 +70,13 @@ def write_mqc_json(df, metadata, output_path):
             "min": 0,
             "max": 1,
             "scale": "YlGnBu"
-        },
-        "data": data_block,
+        }
     }
+
+    # Add all top-level metadata fields
+    for key, value in metadata.items():
+        if key != "pconfig":  # Already handled above
+            json_obj[key] = value
 
     with open(output_path, "w") as f:
         json.dump(json_obj, f, indent=2)
