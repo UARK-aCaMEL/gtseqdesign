@@ -1,9 +1,9 @@
 #!/usr/bin/env nextflow
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    aCaMEL/gtseqdesign
+    aCaMEL/acamel-gtseqdesign
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    Github : https://github.com/aCaMEL/gtseqdesign
+    Github : https://github.com/aCaMEL/acamel-gtseqdesign
 ----------------------------------------------------------------------------------------
 */
 
@@ -15,9 +15,9 @@ nextflow.enable.dsl = 2
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { GTSEQDESIGN  } from './workflows/gtseqdesign'
-include { PIPELINE_INITIALISATION } from './subworkflows/local/utils_nfcore_gtseqdesign_pipeline'
-include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_gtseqdesign_pipeline'
+include { ACAMEL-GTSEQDESIGN  } from './workflows/acamel-gtseqdesign'
+include { PIPELINE_INITIALISATION } from './subworkflows/local/utils_nfcore_acamel-gtseqdesign_pipeline'
+include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_acamel-gtseqdesign_pipeline'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -28,7 +28,7 @@ include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_gtse
 //
 // WORKFLOW: Run main analysis pipeline depending on type of input
 //
-workflow ACAMEL_GTSEQDESIGN {
+workflow ACAMEL_ACAMEL-GTSEQDESIGN {
 
     take:
     samplesheet // channel: samplesheet read in from --input
@@ -38,12 +38,12 @@ workflow ACAMEL_GTSEQDESIGN {
     //
     // WORKFLOW: Run pipeline
     //
-    GTSEQDESIGN (
+    ACAMEL-GTSEQDESIGN (
         samplesheet
     )
 
     emit:
-    multiqc_report = GTSEQDESIGN.out.multiqc_report // channel: /path/to/multiqc_report.html
+    multiqc_report = ACAMEL-GTSEQDESIGN.out.multiqc_report // channel: /path/to/multiqc_report.html
 
 }
 /*
@@ -72,7 +72,7 @@ workflow {
     //
     // WORKFLOW: Run main workflow
     //
-    ACAMEL_GTSEQDESIGN (
+    ACAMEL_ACAMEL-GTSEQDESIGN (
         PIPELINE_INITIALISATION.out.samplesheet
     )
 
@@ -86,7 +86,7 @@ workflow {
         params.outdir,
         params.monochrome_logs,
         params.hook_url,
-        ACAMEL_GTSEQDESIGN.out.multiqc_report
+        ACAMEL_ACAMEL-GTSEQDESIGN.out.multiqc_report
     )
 }
 

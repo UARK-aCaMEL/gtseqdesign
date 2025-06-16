@@ -1,5 +1,5 @@
 name: Feature request
-description: Suggest an idea for the aCaMEL/gtseqdesign pipeline
+description: Suggest an idea for the aCaMEL/acamel-gtseqdesign pipeline
 labels: enhancement
 body:
   - type: textarea

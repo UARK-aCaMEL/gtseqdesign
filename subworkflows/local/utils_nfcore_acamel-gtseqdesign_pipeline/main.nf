@@ -1,5 +1,5 @@
 //
-// Subworkflow with functionality specific to the aCaMEL/gtseqdesign pipeline
+// Subworkflow with functionality specific to the aCaMEL/acamel-gtseqdesign pipeline
 //
 
 /*

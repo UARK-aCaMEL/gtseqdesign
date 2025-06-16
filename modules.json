@@ -1,6 +1,6 @@
 {
-    "name": "aCaMEL/gtseqdesign",
-    "homePage": "https://github.com/aCaMEL/gtseqdesign",
+    "name": "aCaMEL/acamel-gtseqdesign",
+    "homePage": "https://github.com/aCaMEL/acamel-gtseqdesign",
     "repos": {
         "https://github.com/nf-core/modules.git": {
             "modules": {
