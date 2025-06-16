@@ -9,12 +9,12 @@ Content-Type: text/html; charset=utf-8
 $email_html
 
 --nfcoremimeboundary
-Content-Type: image/png;name="aCaMEL-gtseqdesign_logo.png"
+Content-Type: image/png;name="aCaMEL-acamel-gtseqdesign_logo.png"
 Content-Transfer-Encoding: base64
 Content-ID: <nfcorepipelinelogo>
-Content-Disposition: inline; filename="aCaMEL-gtseqdesign_logo_light.png"
+Content-Disposition: inline; filename="aCaMEL-acamel-gtseqdesign_logo_light.png"
 
-<% out << new File("$projectDir/assets/aCaMEL-gtseqdesign_logo_light.png").
+<% out << new File("$projectDir/assets/aCaMEL-acamel-gtseqdesign_logo_light.png").
     bytes.
     encodeBase64().
     toString().

@@ -1,4 +1,4 @@
-# aCaMEL/gtseqdesign: Output
+# aCaMEL/acamel-gtseqdesign: Output
 
 ## Introduction
 

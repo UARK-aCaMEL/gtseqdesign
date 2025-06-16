@@ -1,4 +1,4 @@
-# aCaMEL/gtseqdesign: Citations
+# aCaMEL/acamel-gtseqdesign: Citations
 
 ## [nf-core](https://pubmed.ncbi.nlm.nih.gov/32055031/)
 

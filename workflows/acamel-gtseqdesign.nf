@@ -25,7 +25,7 @@ include { CUSTOMIZE_REPORT } from '../modules/local/report/customize_report.nf'
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-workflow GTSEQDESIGN {
+workflow ACAMEL-GTSEQDESIGN {
 
     take:
     ch_vcf     // [meta, vcf]
