@@ -1,17 +1,272 @@
 # aCaMEL/gtseqdesign: Usage
 
 ## Introduction
-Introduction
+
+The **aCaMEL/gtseqdesign** pipeline is designed for developing GT-seq (Genotyping-in-Thousands by sequencing) panels from existing SNP datasets. GT-seq is a targeted sequencing approach that allows for cost-effective genotyping of hundreds to thousands of SNPs across many individuals, making it ideal for population genomics, conservation genetics, and breeding applications.
+
+This pipeline automates the process of selecting the most informative SNPs from a larger dataset by:
+
+1. **Filtering SNPs** based on quality metrics, missing data thresholds, and minor allele frequencies
+2. **Inferring population structure** using ADMIXTURE to identify genetic clusters
+3. **Ranking SNPs** using information theory metrics from Rosenberg et al. (2003) to identify loci that best distinguish populations
+4. **Selecting optimal panels** of SNPs for GT-seq assay design
+5. **Generating comprehensive reports** with visualizations and quality metrics
+
+The pipeline is particularly useful for researchers who have existing RAD-seq, ddRAD-seq, or whole-genome sequencing data and want to develop targeted sequencing panels for larger-scale population studies.
+
+### Key Features
+
+- **Automated SNP filtering** with customizable thresholds for coverage, missing data, and allele frequencies
+- **Population structure inference** using ADMIXTURE with cross-validation to determine optimal K
+- **Information-theoretic SNP ranking** using multiple metrics (I_n, I_a, ORCA)
+- **Flexible primer design considerations** for different sequencing platforms
+- **Comprehensive reporting** with interactive plots and quality metrics
+- **Support for both reference-based and de novo datasets**
 
 ## Inputs
 
-### Input files
-pipeline inputs
+The pipeline requires three main input files:
 
-### Parameters
-parameters as a table with defaults and description
+### Required Inputs
 
-Discussion on what some of the parameters do
+#### 1. VCF File (`--input`)
+
+A Variant Call Format (VCF) file containing SNP genotypes for all samples. The file can be either uncompressed (`.vcf`) or compressed (`.vcf.gz`).
+
+**Requirements:**
+
+- Must contain biallelic SNPs only
+- Should include all samples you want to consider for panel design
+- Must have proper VCF formatting with CHROM, POS, REF, ALT columns
+- Genotypes should be in standard VCF format (0/0, 0/1, 1/1, ./.)
+
+**Example:**
+
+```bash
+--input /path/to/your/genotypes.vcf.gz
+```
+
+#### 2. Population Map (`--popmap`)
+
+A tab-delimited file mapping sample IDs to population assignments. This file is used for initial population structure analysis.
+
+**Format:**
+
+- Column 1: Sample ID (must match VCF sample names exactly)
+- Column 2: Population ID
+- No header row
+- Tab-separated
+
+**Example file content:**
+
+```
+Sample001    PopA
+Sample002    PopA
+Sample003    PopB
+Sample004    PopB
+```
+
+**Example parameter:**
+
+```bash
+--popmap /path/to/your/popmap.txt
+```
+
+#### 3. Reference Genome (`--reference`)
+
+A reference genome in FASTA format, used for extracting flanking sequences around selected SNPs for primer design.
+
+**Requirements:**
+
+- FASTA format (`.fa`, `.fasta`, `.fna`)
+- Can be compressed (`.gz`) or uncompressed
+- Chromosome/scaffold names must match those in the VCF file
+- Should be the same reference used for variant calling
+
+**Example:**
+
+```bash
+--reference /path/to/reference_genome.fasta.gz
+```
+
+### Optional Inputs
+
+#### MultiQC Configuration (`--multiqc_config`)
+
+Custom MultiQC configuration file to modify report appearance and content.
+
+**Example:**
+
+```bash
+--multiqc_config /path/to/custom_multiqc_config.yml
+```
+
+## Parameters
+
+### Core Analysis Parameters
+
+#### `--maxk` (default: 10)
+
+Maximum number of populations (K) to test in ADMIXTURE analysis. The pipeline will test K values from 1 to this maximum and select the optimal K based on cross-validation.
+
+**Example:**
+
+```bash
+--maxk 8
+```
+
+#### `--ranking_metric` (default: "I_a")
+
+The information theory metric used to rank SNPs for panel selection. Must be one of:
+
+- `I_n`: Informativeness for assignment (Rosenberg et al. 2003)
+- `I_a`: Informativeness for ancestry (Rosenberg et al. 2003)
+- `ORCA[1-allele]`: One-allele ORCA metric
+- `ORCA[2-allele]`: Two-allele ORCA metric
+
+**Example:**
+
+```bash
+--ranking_metric "I_n"
+```
+
+#### `--max_candidates` (default: 500)
+
+Maximum number of top-ranked SNPs to select for the final GT-seq panel.
+
+**Example:**
+
+```bash
+--max_candidates 300
+```
+
+### SNP Filtering Parameters
+
+#### `--ind_cov` (default: 0.9)
+
+Minimum proportion of individuals that must have genotype data for a SNP to be retained (individual coverage threshold).
+
+**Example:**
+
+```bash
+--ind_cov 0.8  # Require genotype data in at least 80% of individuals
+```
+
+#### `--snp_cov` (default: 0.9)
+
+Minimum proportion of SNPs that must have genotype data for an individual to be retained (SNP coverage threshold).
+
+**Example:**
+
+```bash
+--snp_cov 0.85  # Require individuals to have data at 85% of SNPs
+```
+
+#### `--min_maf` (default: 0.05)
+
+Minimum minor allele frequency. SNPs with MAF below this threshold will be filtered out.
+
+**Example:**
+
+```bash
+--min_maf 0.01  # Keep SNPs with MAF >= 1%
+```
+
+### Primer Design Parameters
+
+#### `--primer_length` (default: 75)
+
+Number of invariant bases required upstream of a candidate SNP for primer design. This parameter affects which SNPs are considered suitable for GT-seq assay design.
+
+**Example:**
+
+```bash
+--primer_length 100  # Require 100bp of invariant sequence upstream
+```
+
+#### `--fully_contained` (default: false)
+
+Set to true if you want both the primer and variant to be fully contained within the sequenced locus. This is particularly relevant for de novo RAD-seq or ddRAD-seq datasets where you want to ensure the entire assay fits within the original sequenced fragment.
+
+**Example:**
+
+```bash
+--fully_contained true
+```
+
+### Output Parameters
+
+#### `--outdir` (required)
+
+Directory where all pipeline outputs will be saved.
+
+**Example:**
+
+```bash
+--outdir /path/to/results
+```
+
+#### `--publish_dir_mode` (default: 'copy')
+
+Method for publishing output files. Options include 'copy', 'symlink', 'link', etc.
+
+**Example:**
+
+```bash
+--publish_dir_mode 'symlink'
+```
+
+### Resource Parameters
+
+#### `--max_memory` (default: '128.GB')
+
+Maximum memory that can be used by any single process.
+
+#### `--max_cpus` (default: 16)
+
+Maximum number of CPUs that can be used by any single process.
+
+#### `--max_time` (default: '240.h')
+
+Maximum time that any single process can run.
+
+**Example:**
+
+```bash
+--max_memory '64.GB' --max_cpus 8 --max_time '48.h'
+```
+
+### Example Command
+
+Here's a complete example command with commonly used parameters:
+
+```bash
+nextflow run aCaMEL/gtseqdesign \
+    --input genotypes.vcf.gz \
+    --popmap populations.txt \
+    --reference genome.fasta.gz \
+    --outdir results \
+    --maxk 6 \
+    --max_candidates 400 \
+    --min_maf 0.02 \
+    --ind_cov 0.85 \
+    --primer_length 80 \
+    --ranking_metric "I_a" \
+    -profile docker
+```
+
+This command will:
+
+- Process SNPs from `genotypes.vcf.gz`
+- Use population assignments from `populations.txt`
+- Extract flanking sequences from `genome.fasta.gz`
+- Test population structure with K=1 to K=6
+- Select the top 400 most informative SNPs
+- Filter SNPs with MAF < 2%
+- Require genotype data in ≥85% of individuals
+- Require 80bp of invariant sequence upstream of each SNP
+- Use the I_a metric for ranking SNPs
+- Run using Docker containers
 
 ## Running the pipeline
 
