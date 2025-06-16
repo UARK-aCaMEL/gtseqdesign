@@ -1,61 +1,279 @@
-# aCaMEL/gtseqdesign: Usage
-
-> _Documentation of pipeline parameters is generated automatically from the pipeline schema and can no longer be found in markdown files._
+# aCaMEL/acamel-gtseqdesign: Usage
 
 ## Introduction
 
-<!-- TODO nf-core: Add documentation about anything specific to running your pipeline. For general topics, please point to (and add to) the main nf-core website. -->
+The **aCaMEL/gtseqdesign** pipeline is designed for developing GT-seq (Genotyping-in-Thousands by sequencing) panels from existing SNP datasets. GT-seq is a targeted sequencing approach that allows for cost-effective genotyping of hundreds to thousands of SNPs across many individuals, making it ideal for population genomics, conservation genetics, and breeding applications.
 
-## Samplesheet input
+This pipeline automates the process of selecting the most informative SNPs from a larger dataset by:
 
-You will need to create a samplesheet with information about the samples you would like to analyse before running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with 3 columns, and a header row as shown in the examples below.
+1. **Filtering SNPs** based on quality metrics, missing data thresholds, and minor allele frequencies
+2. **Inferring population structure** using ADMIXTURE to identify genetic clusters
+3. **Ranking SNPs** using information theory metrics from Rosenberg et al. (2003) to identify loci that best distinguish populations
+4. **Selecting optimal panels** of SNPs for GT-seq assay design
+5. **Generating comprehensive reports** with visualizations and quality metrics
+
+The pipeline is particularly useful for researchers who have existing RAD-seq, ddRAD-seq, or whole-genome sequencing data and want to develop targeted sequencing panels for larger-scale population studies.
+
+### Key Features
+
+- **Automated SNP filtering** with customizable thresholds for coverage, missing data, and allele frequencies
+- **Population structure inference** using ADMIXTURE with cross-validation to determine optimal K
+- **Information-theoretic SNP ranking** using multiple metrics (I_n, I_a, ORCA)
+- **Flexible primer design considerations** for different sequencing platforms
+- **Comprehensive reporting** with interactive plots and quality metrics
+- **Support for both reference-based and de novo datasets**
+
+## Inputs
+
+The pipeline requires three main input files:
+
+### Required Inputs
+
+#### 1. VCF File (`--input`)
+
+A Variant Call Format (VCF) file containing SNP genotypes for all samples. The file can be either uncompressed (`.vcf`) or compressed (`.vcf.gz`).
+
+**Requirements:**
+
+- Must contain biallelic SNPs only
+- Should include all samples you want to consider for panel design
+- Must have proper VCF formatting with CHROM, POS, REF, ALT columns
+- Genotypes should be in standard VCF format (0/0, 0/1, 1/1, ./.)
+
+**Example:**
 
 ```bash
---input '[path to samplesheet file]'
+--input /path/to/your/genotypes.vcf.gz
 ```
 
-### Multiple runs of the same sample
+#### 2. Population Map (`--popmap`)
 
-The `sample` identifiers have to be the same when you have re-sequenced the same sample more than once e.g. to increase sequencing depth. The pipeline will concatenate the raw reads before performing any downstream analysis. Below is an example for the same sample sequenced across 3 lanes:
+A tab-delimited file mapping sample IDs to population assignments. This file is used for initial population structure analysis.
 
-```csv title="samplesheet.csv"
-sample,fastq_1,fastq_2
-CONTROL_REP1,AEG588A1_S1_L002_R1_001.fastq.gz,AEG588A1_S1_L002_R2_001.fastq.gz
-CONTROL_REP1,AEG588A1_S1_L003_R1_001.fastq.gz,AEG588A1_S1_L003_R2_001.fastq.gz
-CONTROL_REP1,AEG588A1_S1_L004_R1_001.fastq.gz,AEG588A1_S1_L004_R2_001.fastq.gz
+**Format:**
+
+- Column 1: Sample ID (must match VCF sample names exactly)
+- Column 2: Population ID
+- No header row
+- Tab-separated
+
+**Example file content:**
+
+```
+Sample001    PopA
+Sample002    PopA
+Sample003    PopB
+Sample004    PopB
 ```
 
-### Full samplesheet
+**Example parameter:**
 
-The pipeline will auto-detect whether a sample is single- or paired-end using the information provided in the samplesheet. The samplesheet can have as many columns as you desire, however, there is a strict requirement for the first 3 columns to match those defined in the table below.
-
-A final samplesheet file consisting of both single- and paired-end data may look something like the one below. This is for 6 samples, where `TREATMENT_REP3` has been sequenced twice.
-
-```csv title="samplesheet.csv"
-sample,fastq_1,fastq_2
-CONTROL_REP1,AEG588A1_S1_L002_R1_001.fastq.gz,AEG588A1_S1_L002_R2_001.fastq.gz
-CONTROL_REP2,AEG588A2_S2_L002_R1_001.fastq.gz,AEG588A2_S2_L002_R2_001.fastq.gz
-CONTROL_REP3,AEG588A3_S3_L002_R1_001.fastq.gz,AEG588A3_S3_L002_R2_001.fastq.gz
-TREATMENT_REP1,AEG588A4_S4_L003_R1_001.fastq.gz,
-TREATMENT_REP2,AEG588A5_S5_L003_R1_001.fastq.gz,
-TREATMENT_REP3,AEG588A6_S6_L003_R1_001.fastq.gz,
-TREATMENT_REP3,AEG588A6_S6_L004_R1_001.fastq.gz,
+```bash
+--popmap /path/to/your/popmap.txt
 ```
 
-| Column    | Description                                                                                                                                                                            |
-| --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `sample`  | Custom sample name. This entry will be identical for multiple sequencing libraries/runs from the same sample. Spaces in sample names are automatically converted to underscores (`_`). |
-| `fastq_1` | Full path to FastQ file for Illumina short reads 1. File has to be gzipped and have the extension ".fastq.gz" or ".fq.gz".                                                             |
-| `fastq_2` | Full path to FastQ file for Illumina short reads 2. File has to be gzipped and have the extension ".fastq.gz" or ".fq.gz".                                                             |
+#### 3. Reference Genome (`--reference`)
 
-An [example samplesheet](../assets/samplesheet.csv) has been provided with the pipeline.
+A reference genome in FASTA format, used for extracting flanking sequences around selected SNPs for primer design.
+
+**Requirements:**
+
+- FASTA format (`.fa`, `.fasta`, `.fna`)
+- Can be compressed (`.gz`) or uncompressed
+- Chromosome/scaffold names must match those in the VCF file
+- Should be the same reference used for variant calling
+
+**Example:**
+
+```bash
+--reference /path/to/reference_genome.fasta.gz
+```
+
+### Optional Inputs
+
+#### MultiQC Configuration (`--multiqc_config`)
+
+Custom MultiQC configuration file to modify report appearance and content.
+
+**Example:**
+
+```bash
+--multiqc_config /path/to/custom_multiqc_config.yml
+```
+
+## Parameters
+
+### Core Analysis Parameters
+
+#### `--maxk` (default: 10)
+
+Maximum number of populations (K) to test in ADMIXTURE analysis. The pipeline will test K values from 1 to this maximum and select the optimal K based on cross-validation.
+
+**Example:**
+
+```bash
+--maxk 8
+```
+
+#### `--ranking_metric` (default: "I_a")
+
+The information theory metric used to rank SNPs for panel selection. Must be one of:
+
+- `I_n`: Informativeness for assignment (Rosenberg et al. 2003)
+- `I_a`: Informativeness for ancestry (Rosenberg et al. 2003)
+- `ORCA[1-allele]`: One-allele ORCA metric
+- `ORCA[2-allele]`: Two-allele ORCA metric
+
+**Example:**
+
+```bash
+--ranking_metric "I_n"
+```
+
+#### `--max_candidates` (default: 500)
+
+Maximum number of top-ranked SNPs to select for the final GT-seq panel.
+
+**Example:**
+
+```bash
+--max_candidates 300
+```
+
+### SNP Filtering Parameters
+
+#### `--ind_cov` (default: 0.9)
+
+Minimum proportion of individuals that must have genotype data for a SNP to be retained (individual coverage threshold).
+
+**Example:**
+
+```bash
+--ind_cov 0.8  # Require genotype data in at least 80% of individuals
+```
+
+#### `--snp_cov` (default: 0.9)
+
+Minimum proportion of SNPs that must have genotype data for an individual to be retained (SNP coverage threshold).
+
+**Example:**
+
+```bash
+--snp_cov 0.85  # Require individuals to have data at 85% of SNPs
+```
+
+#### `--min_maf` (default: 0.05)
+
+Minimum minor allele frequency. SNPs with MAF below this threshold will be filtered out.
+
+**Example:**
+
+```bash
+--min_maf 0.01  # Keep SNPs with MAF >= 1%
+```
+
+### Primer Design Parameters
+
+#### `--primer_length` (default: 75)
+
+Number of invariant bases required upstream of a candidate SNP for primer design. This parameter affects which SNPs are considered suitable for GT-seq assay design.
+
+**Example:**
+
+```bash
+--primer_length 100  # Require 100bp of invariant sequence upstream
+```
+
+#### `--fully_contained` (default: false)
+
+Set to true if you want both the primer and variant to be fully contained within the sequenced locus. This is particularly relevant for de novo RAD-seq or ddRAD-seq datasets where you want to ensure the entire assay fits within the original sequenced fragment.
+
+**Example:**
+
+```bash
+--fully_contained true
+```
+
+### Output Parameters
+
+#### `--outdir` (required)
+
+Directory where all pipeline outputs will be saved.
+
+**Example:**
+
+```bash
+--outdir /path/to/results
+```
+
+#### `--publish_dir_mode` (default: 'copy')
+
+Method for publishing output files. Options include 'copy', 'symlink', 'link', etc.
+
+**Example:**
+
+```bash
+--publish_dir_mode 'symlink'
+```
+
+### Resource Parameters
+
+#### `--max_memory` (default: '128.GB')
+
+Maximum memory that can be used by any single process.
+
+#### `--max_cpus` (default: 16)
+
+Maximum number of CPUs that can be used by any single process.
+
+#### `--max_time` (default: '240.h')
+
+Maximum time that any single process can run.
+
+**Example:**
+
+```bash
+--max_memory '64.GB' --max_cpus 8 --max_time '48.h'
+```
+
+### Example Command
+
+Here's a complete example command with commonly used parameters:
+
+```bash
+nextflow run aCaMEL/gtseqdesign \
+    --input genotypes.vcf.gz \
+    --popmap populations.txt \
+    --reference genome.fasta.gz \
+    --outdir results \
+    --maxk 6 \
+    --max_candidates 400 \
+    --min_maf 0.02 \
+    --ind_cov 0.85 \
+    --primer_length 80 \
+    --ranking_metric "I_a" \
+    -profile docker
+```
+
+This command will:
+
+- Process SNPs from `genotypes.vcf.gz`
+- Use population assignments from `populations.txt`
+- Extract flanking sequences from `genome.fasta.gz`
+- Test population structure with K=1 to K=6
+- Select the top 400 most informative SNPs
+- Filter SNPs with MAF < 2%
+- Require genotype data in ≥85% of individuals
+- Require 80bp of invariant sequence upstream of each SNP
+- Use the I_a metric for ranking SNPs
+- Run using Docker containers
 
 ## Running the pipeline
 
 The typical command for running the pipeline is as follows:
 
 ```bash
-nextflow run aCaMEL/gtseqdesign --input ./samplesheet.csv --outdir ./results --genome GRCh37 -profile docker
+nextflow run UARK-aCaMEL/gtseqdesign --input genotypes.vcf --outdir ./results --reference reference.fasta --popmap popmap.tsv -profile docker
 ```
 
 This will launch the pipeline with the `docker` configuration profile. See below for more information about profiles.
@@ -80,15 +298,16 @@ Do not use `-c <file>` to specify parameters as this will result in errors. Cust
 The above pipeline run specified with a params file in yaml format:
 
 ```bash
-nextflow run aCaMEL/gtseqdesign -profile docker -params-file params.yaml
+nextflow run aCaMEL/acamel-gtseqdesign -profile docker -params-file params.yaml
 ```
 
 with `params.yaml` containing:
 
 ```yaml
-input: './samplesheet.csv'
+input: './genotypes.vcf'
 outdir: './results/'
-genome: 'GRCh37'
+reference: 'referance.fasta'
+popmap: 'popmap.tsv'
 <...>
 ```
 
@@ -99,14 +318,14 @@ You can also generate such `YAML`/`JSON` files via [nf-core/launch](https://nf-c
 When you run the above command, Nextflow automatically pulls the pipeline code from GitHub and stores it as a cached version. When running the pipeline after this, it will always use the cached version if available - even if the pipeline has been updated since. To make sure that you're running the latest version of the pipeline, make sure that you regularly update the cached version of the pipeline:
 
 ```bash
-nextflow pull aCaMEL/gtseqdesign
+nextflow pull aCaMEL/acamel-gtseqdesign
 ```
 
 ### Reproducibility
 
 It is a good idea to specify a pipeline version when running the pipeline on your data. This ensures that a specific version of the pipeline code and software are used when you run your pipeline. If you keep using the same tag, you'll be running the same version of the pipeline, even if there have been changes to the code since.
 
-First, go to the [aCaMEL/gtseqdesign releases page](https://github.com/aCaMEL/gtseqdesign/releases) and find the latest pipeline version - numeric only (eg. `1.3.1`). Then specify this when running the pipeline with `-r` (one hyphen) - eg. `-r 1.3.1`. Of course, you can switch to another version by changing the number after the `-r` flag.
+First, go to the [aCaMEL/acamel-gtseqdesign releases page](https://github.com/aCaMEL/acamel-gtseqdesign/releases) and find the latest pipeline version - numeric only (eg. `1.3.1`). Then specify this when running the pipeline with `-r` (one hyphen) - eg. `-r 1.3.1`. Of course, you can switch to another version by changing the number after the `-r` flag.
 
 This version number will be logged in reports when you run the pipeline, so that you'll know what you used when you look back in the future. For example, at the bottom of the MultiQC reports.
 

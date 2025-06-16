@@ -1,9 +1,9 @@
 #!/usr/bin/env nextflow
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    aCaMEL/gtseqdesign
+    aCaMEL/acamel-gtseqdesign
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    Github : https://github.com/aCaMEL/gtseqdesign
+    Github : https://github.com/aCaMEL/acamel-gtseqdesign
 ----------------------------------------------------------------------------------------
 */
 
@@ -15,9 +15,9 @@ nextflow.enable.dsl = 2
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { GTSEQDESIGN  } from './workflows/gtseqdesign'
-include { PIPELINE_INITIALISATION } from './subworkflows/local/utils_nfcore_gtseqdesign_pipeline'
-include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_gtseqdesign_pipeline'
+include { ACAMEL-GTSEQDESIGN  } from './workflows/acamel-gtseqdesign'
+include { PIPELINE_INITIALISATION } from './subworkflows/local/utils_nfcore_acamel-gtseqdesign_pipeline'
+include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_acamel-gtseqdesign_pipeline'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -28,10 +28,13 @@ include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_gtse
 //
 // WORKFLOW: Run main analysis pipeline depending on type of input
 //
-workflow ACAMEL_GTSEQDESIGN {
+workflow ACAMEL_ACAMEL-GTSEQDESIGN {
 
     take:
-    samplesheet // channel: samplesheet read in from --input
+    vcf     // channel: vcf read in from --input
+    tbi     // channel: vcf index
+    popmap  // channel: population map
+    reference
 
     main:
 
@@ -39,11 +42,13 @@ workflow ACAMEL_GTSEQDESIGN {
     // WORKFLOW: Run pipeline
     //
     GTSEQDESIGN (
-        samplesheet
-    )
+        vcf,
+        tbi,
+        popmap,
+        reference
 
     emit:
-    multiqc_report = GTSEQDESIGN.out.multiqc_report // channel: /path/to/multiqc_report.html
+    multiqc_report = ACAMEL-GTSEQDESIGN.out.multiqc_report // channel: /path/to/multiqc_report.html
 
 }
 /*
@@ -66,14 +71,19 @@ workflow {
         params.monochrome_logs,
         args,
         params.outdir,
-        params.input
+        params.input,
+        params.popmap,
+        params.reference
     )
 
     //
     // WORKFLOW: Run main workflow
     //
     ACAMEL_GTSEQDESIGN (
-        PIPELINE_INITIALISATION.out.samplesheet
+        PIPELINE_INITIALISATION.out.vcf,
+        PIPELINE_INITIALISATION.out.tbi,
+        PIPELINE_INITIALISATION.out.popmap,
+        PIPELINE_INITIALISATION.out.reference
     )
 
     //
@@ -86,7 +96,7 @@ workflow {
         params.outdir,
         params.monochrome_logs,
         params.hook_url,
-        ACAMEL_GTSEQDESIGN.out.multiqc_report
+        ACAMEL_ACAMEL-GTSEQDESIGN.out.multiqc_report
     )
 }
 
