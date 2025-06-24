@@ -15,7 +15,7 @@ nextflow.enable.dsl = 2
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { ACAMEL-GTSEQDESIGN  } from './workflows/acamel-gtseqdesign'
+include { ACAMEL_GTSEQDESIGN  } from './workflows/acamel-gtseqdesign'
 include { PIPELINE_INITIALISATION } from './subworkflows/local/utils_nfcore_acamel-gtseqdesign_pipeline'
 include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_acamel-gtseqdesign_pipeline'
 
@@ -28,7 +28,7 @@ include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_acam
 //
 // WORKFLOW: Run main analysis pipeline depending on type of input
 //
-workflow ACAMEL-GTSEQDESIGN {
+workflow ACAMEL_GTSEQDESIGN {
 
     take:
     vcf     // channel: vcf read in from --input
@@ -48,7 +48,7 @@ workflow ACAMEL-GTSEQDESIGN {
         reference
 
     emit:
-    multiqc_report = ACAMEL-GTSEQDESIGN.out.multiqc_report // channel: /path/to/multiqc_report.html
+    multiqc_report = ACAMEL_GTSEQDESIGN.out.multiqc_report // channel: /path/to/multiqc_report.html
 
 }
 /*
