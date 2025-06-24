@@ -28,7 +28,7 @@ include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_acam
 //
 // WORKFLOW: Run main analysis pipeline depending on type of input
 //
-workflow ACAMEL_ACAMEL-GTSEQDESIGN {
+workflow ACAMEL-GTSEQDESIGN {
 
     take:
     vcf     // channel: vcf read in from --input
