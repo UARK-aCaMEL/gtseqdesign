@@ -3,6 +3,13 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v1.0.1 - Cemetery Gates (Patch 1) - [24-05-2025]
+
+### Enhancements & fixes
+
+Small fixes to syntax to make the pipeline work when called with `nextflow run uark-acamel/gtseqdesign -r $VERSION`
+
+
 ## v1.0.0 - Cemetery Gates - [16-05-2025]
 
 Initial release of aCaMEL/acamel-gtseqdesign, created with the [nf-core](https://nf-co.re/) template.
