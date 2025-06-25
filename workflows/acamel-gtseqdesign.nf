@@ -8,7 +8,7 @@ include { MULTIQC                } from '../modules/nf-core/multiqc/main'
 include { paramsSummaryMap       } from 'plugin/nf-validation'
 include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
-include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_gtseqdesign_pipeline'
+include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_acamel-gtseqdesign_pipeline/main.nf'
 include { ADMIXPIPE as ADMIXPIPE_PRE } from '../subworkflows/local/admixpipe.nf'
 include { ADMIXPIPE as ADMIXPIPE_POST } from '../subworkflows/local/admixpipe.nf'
 include { SELECT_CANDIDATES } from '../subworkflows/local/select_candidates.nf'
@@ -25,7 +25,7 @@ include { CUSTOMIZE_REPORT } from '../modules/local/report/customize_report.nf'
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-workflow ACAMEL-GTSEQDESIGN {
+workflow ACAMEL_GTSEQDESIGN {
 
     take:
     ch_vcf     // [meta, vcf]
