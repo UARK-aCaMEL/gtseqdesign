@@ -21,6 +21,11 @@
 
 The pipeline takes VCF and population map inputs and produces filtered SNP panels, summary figures, and MultiQC reports.
 
+[![📊 Example MultiQC Report](./assets/multiqc_report.html)](./assets/multiqc_report.html)
+
+> **🚀 Example Report:** [Click here to view the full MultiQC report](./assets/multiqc_report.html)
+
+
 ### Overview
 
 <img src="./docs/images/acamel_gtseqdesign_metro_map.png" alt="aCaMEL/gtseqdesign overview" width="600"/>
