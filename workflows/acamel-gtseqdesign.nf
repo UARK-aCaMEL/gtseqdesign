@@ -8,7 +8,7 @@ include { MULTIQC                } from '../modules/nf-core/multiqc/main'
 include { paramsSummaryMap       } from 'plugin/nf-validation'
 include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
-include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_gtseqdesign_pipeline'
+include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_acamel-gtseqdesign_pipeline/main.nf'
 include { ADMIXPIPE as ADMIXPIPE_PRE } from '../subworkflows/local/admixpipe.nf'
 include { ADMIXPIPE as ADMIXPIPE_POST } from '../subworkflows/local/admixpipe.nf'
 include { SELECT_CANDIDATES } from '../subworkflows/local/select_candidates.nf'
@@ -79,14 +79,13 @@ workflow ACAMEL_GTSEQDESIGN {
     //
     // Denovo assembly handling
     //
-    // Removes SNPs if they are not in the first ${params.primer_length}
+    // Removes SNPs if they are not at least primer_length from locus boundaries
     // number of bases (for denovo assembled loci only)
     // This forces primer+variant to be fully contained ONLY within the sequences locus
     // Otherwise, flanking sequence will be inferred using the provided reference
     if ( params.fully_contained ) {
-        // Get list of denovo loci
-        LIST_CHROMS( ch_filtered_vcf, ch_filtered_tbi )
-        ch_versions = ch_versions.mix ( LIST_CHROMS.out.versions )
+        // Get list of denovo loci and their lengths
+        LIST_CHROMS( ch_ref_ready )
 
         FILTER_POSITIONS(
             ch_filtered_vcf,
